@@ -1,5 +1,8 @@
 [https://pages.cs.wisc.edu/~fischer/cs701.f06/berstein_rodeh.pdf](https://pages.cs.wisc.edu/~fischer/cs701.f06/berstein_rodeh.pdf)
 
+# Global Instruction Scheduling for SuperScalar Machines
+
+
 <h2 id="hS6U8">Abstraction</h2>
 To improve the utilization of machine resources in <font style="color:#DF2A3F;">superscalar</font> processors, the instructions have to be carefully scheduled by the compiler. 
 
@@ -31,7 +34,7 @@ We have implemented our algorithms in the IBM XL family of compilers and have ev
 
 我们已经在 IBM XL 系列编译器中实现了我们的算法，并在 IBM RISC System/6000 机器上对其进行了评估。
 
-<h2 id="CyQP8">Introduction</h2>
+<h2 id="CyQP8">1. Introduction</h2>
 Starting in the late seventies, a new approach for building high speed processors emerged which emphasizes streamlining of program instructions; subsequently this direction in computer architecture was called RISC [P85] 
 
 从 70 年代末开始，出现了一种构建高速处理器的新方法，强调简化程序指令；随后计算机架构的这个方向被称为 RISC [P85]
@@ -224,7 +227,7 @@ Finally, in Section 6 we bring some performance results and conclude in Section 
 
 
 
-<h2 id="gVwhj">Parametric machine description</h2>
+<h2 id="gVwhj">2. Parametric machine description</h2>
 
 
 Our model of a superscalar machine is based on the description of a typical RISC processor whose only instructions that reference memory are load and store instructions, while all the computations are done in registers. 
@@ -291,7 +294,7 @@ More information about the notion of delays due to pipelined constraints can be 
 
 有关由于流水线约束导致的延迟概念的更多信息，可以在[BG89，BRG89]中找到。
 
-<h3 id="gVwhj">The RS/6K model</h3>
+<h3 id="gVwhj">2.1 The RS/6K model</h3>
 
 
 Here we show how our generic model of a superscalar machine is cotilgured to fit the RS/6K machine. The RS/6K processor is modelled as follows:
@@ -333,7 +336,9 @@ In this paper we concentrate on fixed point computations only. Therefore, only t
 
 在本文中我们只关注定点计算。因此，我们只考虑上述第一种和第二种类型的延迟。
 
-# A program example
+## A program example
+
+
 Next, we present a small program (written in C) that computes the minimum and the maximum of an array. 
 
 接下来，我们将提供一个小程序（用 C 编写），计算数组的最小值和最大值。
@@ -342,13 +347,88 @@ This program is shown in Figure 1 and will serve us as a running example.
 
 该程序如图 1 所示，将作为一个运行示例。
 
+Figure 1. A program computing the minimum and the maximum of an array
+```Figure 1. A program computing the minimum and the maximum of an array
+/* find the largest and the smal lest number
+in a given array */
+minmax(a,n) {
+int i,u,v,min,max,n,a[SIZE];
+min=a[O]; max=min; i=l;
+/****************** LOOP STARTS *************/
+while (i <n) {
+    u=a[i]; v=a[i+l];
+    if (u>v) {
+        if (u>max) max=u;
+        if (v<min) min=v;
+    }
+    else {
+        if (v>max) max=v;
+        if (u<min) min=u;
+    }
+    i= i+2;
+} 
+/************** Loop ENDS ***************/
+printf(’’min=%d max=%d\n’’,min,max);
+}
+```
+
 In this program, concentrating on the loop which is marked in Figure 1, we notice that two elements of the array a are fetched every iteration of the loop. 
 
 在这个程序中，集中精力于图 1 中标记的循环，我们注意到每次循环迭代都会获取数组 a 的两个元素。
 
+
 Next, these elements of a are compared one to another (if(u > v)) , and subsequently they are compared to the max and mi n variables, updating the maximum and the minimum, if needed. The RS/6K pseudo-code for the loop, that corresponds to the real code created by the IBM XL-C compiler3 , is presented in Figure 2
 
-接下来，将 a 的这些元素相互比较（如果（u > v）），然后将它们与 max 和 min 变量进行比较，并根据需要更新最大值和最小值。图 2 显示了该循环的 RS/6K 伪代码，该代码对应于 IBM XL-C 编译器3 创建的实际代码
+接下来，将 a 的这些元素相互比较（如果（u > v）），然后将它们与 max 和 min 变量进行比较，并根据需要更新最大值和最小值。图 2 显示了该循环的 RS/6K 伪代码，该代码对应于 IBM XL-C 编译器创建的实际代码
+
+Figure 2. The RS/6K pseudo-code forthe program of Figure 1
+
+```
+max is kept in r30
+min is kept in r28
+i is kept in r29
+n is kept in r27
+address of a[i] is kept in r31
+. . . more instructions here . . .
+*************** LOOP STARTS *******************
+CL.0:
+(I1) L r12=a(r31,4) 1oad u
+(I2) LU rO, r31=a(r31,8) load v and increment index
+(I3) C cr7=r12, r0 U>v
+(I4) BF CL.4, cr7,0x2/gt
+--------------------------------------- END BL1
+(I5) C cr6=r12, r30 u > max
+(I6) BF CL.6,cr6,0x2/gt
+--------------------------------------- END BL2
+(I7) LR r30=r12 max = u
+--------------------------------------- END BL3
+CL.6:
+(I8) C cr7=r0,r28 v < min
+(I9) BF CL.9,cr7,0xl/lt
+--------------------------------------- END BL4
+(I10) LR r28=r0 min = v
+(I11) B CL.9
+--------------------------------------- END BL5
+CL.4:
+(I12) C cr6=r0,r30 v > max
+(I13) BF CL.11,cr6,0x2/gt
+--------------------------------------- END BL6
+(I14) LR r30=r0 max = v
+--------------------------------------- END BL7
+CL. 11:
+(I15) C cr7=r12,r28 u < min
+(I16) BF CL.9,cr7,0xl/lt
+--------------------------------------- END BL8
+(I17) LR r28=r12 min = u
+--------------------------------------- END BL9
+CL.9:
+(I18) AI r29=r29,2 i =i+2
+(I19) C cr4=r29,r27 i<n
+(I20) BT CL.0,cr4,0xl/lt
+--------------------------------------- END BL1O
+*************** LOOP ENDS **********************
+. . . more instructions here . . .
+```
 
 For convenience, we number the instructions in the code of Figure 2 (I1-I20) and annotate them with the corresponding statements of the program of Figure 1. 
 
@@ -360,7 +440,7 @@ Also, we mark the ten basic blocks (BL1-BL10) of which the code of Figure 2 comp
 
 For simplicity of notation, the registers mentioned in the code are real. 
 
-为了表示简单，代码中提到的寄存器都是实数。(？？？)
+为了表示简单，代码中提到的寄存器都是真实存在的/实数？
 
 However, as was mentioned in Section 2, we prefer to invoke the global scheduling algorithm before the register allocation is done (at this stage there is an unbounded number of registers in the code), even though conceptually there is no problem to activate the instruction scheduling after the register allocation is completed.
 
@@ -370,13 +450,13 @@ Every instruction in the code of Figure 2, except for branches, requires one cyc
 
 图 2 代码中的每一条指令（分支除外）都需要在固定点单元中占用一个周期，而分支在分支单元中则占用一个周期。
 
-There is a one cycle delay between instruction 12 and 13, due to the delayed load feature of the RS/6K. 
+There is a one cycle delay between instruction I2 and I3, due to the delayed load feature of the RS/6K. 
 
-由于 RS/6K 的延迟加载特性，指令 12 和 13 之间存在一个周期的延迟。
+由于 RS/6K 的延迟加载特性，指令 I2 和 I3 之间存在一个周期的延迟。
 
-Notice the special form of a load with update instruction in 12: in addition to assigning to r0 the value of the memory locational address (r31) + 8, it also increments r31 by 8 (post-increment). 
+Notice the special form of a load with update instruction in I2: in addition to assigning to r0 the value of the memory locational address (r31) + 8, it also increments r31 by 8 (post-increment). 
 
-注意 12 中带更新加载指令的特殊形式：除了将内存位置地址 (r31) + 8 的值分配给 r0 之外，它还将 r31 增加 8（后增）。
+注意 I2 中带更新指令的加载的特殊形式：除了将内存位置地址 (r31) + 8 的值分配给 r0 之外，它还将 r31 增加 8（后增）。
 
 Also, there is a three cycle delay between each compare instruction and the corresponding branch instruction. 
 
@@ -386,7 +466,8 @@ Taking into consideration that the fixed point unit and the branch unit run in p
 
 考虑到定点单元和分支单元并行运行，我们估计代码执行需要 20、21 或 22 个周期，具体取决于是否分别完成 max 和 min 变量（LR 指令）的 0、1 或 2 次更新。
 
-The Program Dependence Graph
+## The Program Dependence Graph
+
 The program dependence graph is a convenient way to summarize both the control dependence and data dependence among the code instructions, While the concept of data dependence, that carries the basic idea of one instruction computing a data value and another instruction using this value, was employed in compilers a long time ago, the notion of control dependence was introduced quite recently [FOW87]. 
 
 程序依赖图是总结代码指令之间的控制依赖和数据依赖的一种便捷方式。数据依赖的概念很早以前就在编译器中使用，其基本思想是一条指令计算一个数据值，而另一条指令使用该值。而控制依赖的概念则是最近才引入的[FOW87]。
