@@ -328,3 +328,100 @@ In this paper we concentrate on fixed point computations only. Therefore, only t
 
 在本文中我们只关注定点计算。因此，我们只考虑上述第一种和第二种类型的延迟。
 
+A program example
+Next, we present a small program (written in C) that computes the minimum and the maximum of an array. 
+
+接下来，我们将提供一个小程序（用 C 编写），计算数组的最小值和最大值。
+
+This program is shown in Figure 1 and will serve us as a running example.
+
+该程序如图 1 所示，将作为一个运行示例。
+
+In this program, concentrating on the loop which is marked in Figure 1, we notice that two elements of the array a are fetched every iteration of the loop. 
+
+在这个程序中，集中精力于图 1 中标记的循环，我们注意到每次循环迭代都会获取数组 a 的两个元素。
+
+Next, these elements of a are compared one to another (if(u > v)) , and subsequently they are compared to the max and mi n variables, updating the maximum and the minimum, if needed. The RS/6K pseudo-code for the loop, that corresponds to the real code created by the IBM XL-C compiler3 , is presented in Figure 2
+
+接下来，将 a 的这些元素相互比较（如果（u > v）），然后将它们与 max 和 min 变量进行比较，并根据需要更新最大值和最小值。图 2 显示了该循环的 RS/6K 伪代码，该代码对应于 IBM XL-C 编译器3 创建的实际代码
+
+For convenience, we number the instructions in the code of Figure 2 (I1-I20) and annotate them with the corresponding statements of the program of Figure 1. 
+
+为了方便起见，我们对图 2 的代码中的指令进行编号（I1-I20），并用图 1 的程序的相应语句进行注释。
+
+Also, we mark the ten basic blocks (BL1-BL10) of which the code of Figure 2 comprises for the purposes of future discussion.
+
+另外，为了便于将来讨论，我们标记了图 2 的代码所包含的十个基本块（BL1-BL10）。
+
+For simplicity of notation, the registers mentioned in the code are real. 
+
+为了表示简单，代码中提到的寄存器都是实数。(？？？)
+
+However, as was mentioned in Section 2, we prefer to invoke the global scheduling algorithm before the register allocation is done (at this stage there is an unbounded number of registers in the code), even though conceptually there is no problem to activate the instruction scheduling after the register allocation is completed.
+
+然而，正如第 2 节所提到的，我们倾向于在寄存器分配完成之前调用全局调度算法（在此阶段代码中的寄存器数量是无限的），即使从概念上讲在寄存器分配完成后激活指令调度没有问题。
+
+Every instruction in the code of Figure 2, except for branches, requires one cycle in the fixed point unit, while the branches take one cycle in the branch unit. 
+
+图 2 代码中的每一条指令（分支除外）都需要在固定点单元中占用一个周期，而分支在分支单元中则占用一个周期。
+
+There is a one cycle delay between instruction 12 and 13, due to the delayed load feature of the RS/6K. 
+
+由于 RS/6K 的延迟加载特性，指令 12 和 13 之间存在一个周期的延迟。
+
+Notice the special form of a load with update instruction in 12: in addition to assigning to r0 the value of the memory locational address (r31) + 8, it also increments r31 by 8 (post-increment). 
+
+注意 12 中带更新加载指令的特殊形式：除了将内存位置地址 (r31) + 8 的值分配给 r0 之外，它还将 r31 增加 8（后增）。
+
+Also, there is a three cycle delay between each compare instruction and the corresponding branch instruction. 
+
+此外，每个比较指令和相应的分支指令之间有三个周期的延迟。
+
+Taking into consideration that the fixed point unit and the branch unit run in parallel, we estimate that the code executes in 20, 21 or 22 cycles, depending on if 0, 1 or 2 updates of max and mi n variables (LR instructions) are done, respectively.
+
+考虑到定点单元和分支单元并行运行，我们估计代码执行需要 20、21 或 22 个周期，具体取决于是否分别完成 max 和 min 变量（LR 指令）的 0、1 或 2 次更新。
+
+The Program Dependence Graph
+The program dependence graph is a convenient way to summarize both the control dependence and data dependence among the code instructions, While the concept of data dependence, that carries the basic idea of one instruction computing a data value and another instruction using this value, was employed in compilers a long time ago, the notion of control dependence was introduced quite recently [FOW87]. 
+
+程序依赖图是总结代码指令之间的控制依赖和数据依赖的一种便捷方式。数据依赖的概念很早以前就在编译器中使用，其基本思想是一条指令计算一个数据值，而另一条指令使用该值。而控制依赖的概念则是最近才引入的[FOW87]。
+
+In what follows we discuss the notions of control and data dependence separately.
+
+接下来我们分别讨论控制和数据依赖的概念。
+
+Control dependences
+We describe the idea of control dependence using the program example of Figure 1. 
+
+我们使用图 1 的程序示例来描述控制依赖的想法。
+
+In Figure 3 the control flow graph of the loop of Figure 2 is described, where each node corresponds to a single basic block in the loop. 
+
+图 3 描述了图 2 的循环的控制流图，其中每个节点对应循环中的一个基本块。
+
+The numbers inside the circles denote the indices of the ten basic blocks BL1-BL1O. \
+
+圆圈内的数字表示十个基本块BL1-BL1O的索引。
+
+We augment the graph of Figure 3 with unique ENTRY and EXIT nodes for convenience. 
+
+为了方便起见，我们在图 3 的图形中添加了独特的 ENTRY 和 EXIT 节点。
+
+Throughout this discussion we assume a single entry node in the control flow graph, i.e., there is a single node (in our case BL1) which is connected to ENTRY. 
+
+在整个讨论中，我们假设控制流图中有一个入口节点，即有一个连接到 ENTRY 的节点（在我们的例子中是 BL1）。
+
+However several exit nodes that have the edges leading to EXIT may exist. 
+
+然而，可能存在多个具有通向 EXIT 的边的出口节点。
+
+In our case BL10 is a (single) exit node. 
+
+在我们的例子中，BL10 是一个（单个）出口节点。
+
+For the strongIy connected regions (that represent loops in this context), the assumption of a control flow graph having a single entry corresponds to the assumption that the control flow graph is reducible.
+
+对于强连通区域（在此上下文中表示循环），控制流图具有单个条目的假设对应于控制流图可约化的假设。
+
+
+
