@@ -287,3 +287,42 @@ More information about the notion of delays due to pipelined constraints can be 
 
 有关由于流水线约束导致的延迟概念的更多信息，可以在[BG89，BRG89]中找到。
 
+ere we show how our generic model of a superscalar machine is cotilgured to fit the RS/6K machine. The RS/6K processor is modelled as follows:
+
+<h3 id="gVwhj">The RS/6K model</h3>
+
+这里我们展示了如何将我们的超标量机器通用模型与 RS/6K 机器进行匹配。RS/6K 处理器的模型如下：
+
+- m = 3, there are three types of functional units: fixed point, floating point and branch types.
+
+m = 3，功能单元有三种类型：定点型、浮点型和分支型。
+- n1= 1, n2= 1, n3= 1, there is a single fixed point unit, a single floating point unit and a single branch unit.
+
+n1= 1，n2= 1，n3= 1，有一个定点单元、一个浮点单元和一个分支单元。
+- Most of the instructions are executed in one cycle, however, there are also multi-cycle instructions, like multiplication, division, etc
+
+大多数指令在一个周期内执行，但也存在多周期指令，例如乘法、除法等
+- There are four main types of delays:
+
+延迟主要有四种类型：
+- a delay of one cycle between a load instruction and the instruction that uses its result register (delayed Zoad);
+
+加载指令和使用其结果寄存器的指令之间有一个周期的延迟（延迟 Zoad）；
+- a delay of three cycles between a fixed point compare instruction and the branch instruction that uses the result of that compare2;
+
+定点比较指令和使用该 compare2 结果的分支指令之间有三个周期的延迟；
+- a delay of one cycle between a floating point instruction and the instruction that uses its result;
+
+浮点指令与使用其结果的指令之间有一个周期的延迟；
+- a delay of five cycles between a floating point compare instruction and the branch instruction that uses the result of that compare.
+
+浮点比较指令与使用该比较结果的分支指令之间存在 5 个周期的延迟。
+
+There are a few additional delays in the machine whose effect is secondary.
+
+机器中还有一些额外的延迟，但其影响是次要的。
+
+In this paper we concentrate on fixed point computations only. Therefore, only the first and the second types of the above mentioned delays will be considered.
+
+在本文中我们只关注定点计算。因此，我们只考虑上述第一种和第二种类型的延迟。
+
