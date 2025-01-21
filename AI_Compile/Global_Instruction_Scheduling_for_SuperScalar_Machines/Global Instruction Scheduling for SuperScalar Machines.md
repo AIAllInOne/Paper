@@ -21,7 +21,7 @@ A scheme for global (intra-loop) scheduling is proposed, which uses the control 
 
 This novel scheduling framework is based on the parametric description of the machine architecture, which spans a range of <font style="color:#DF2A3F;">superscalar and VLIW machines</font>, and <font style="color:#DF2A3F;">exploits speculative execution</font> of instructions to further enhance the performance of the general code. 
 
-这种新颖的调度框架基于机器架构的参数描述，涵盖了一系列<font style="color:#DF2A3F;">超标量 (superscalar) 和VLIW 架构 CPU ?</font>，并利用指令的<font style="color:#DF2A3F;">推测执行</font>来进一步提高通用代码的性能。
+这种新颖的调度框架基于机器架构的参数描述，涵盖了一系列<font style="color:#DF2A3F;">超标量 (superscalar) 和VLIW 架构的机器 ?</font>，并利用指令的<font style="color:#DF2A3F;">推测执行</font>来进一步提高通用代码的性能。
 
 > 超长指令字（英语：Very long instruction word，缩写：VLIW）指的是一种被设计为可以利用指令级并行（ILP）优势的CPU体系结构。一个按照顺序执行指令的非超标量处理器不能充分的利用处理器的资源，有可能导致低性能。
 
@@ -52,7 +52,7 @@ The burden of such transformations, called <font style="color:#DF2A3F;">instruct
 
 Previously, scheduling algorithms at the instruction level were suggested for processors with several functional units [BJR89], pipelined machines [BG89, BRG89, HG83, GM86, W90] and Very Large Instruction Word (VLIW) machines [E85] While for machines with n functional units the idea is to be able to execute as many as n instructions each cycle, for pipelined machines the goal is to issue a new instruction every cycle, effectively eliminating the so-called NOPS (No Operations).
 
-此前，指令级的调度算法被建议用于具有多个功能单元的处理器 [BJR89]、流水线机器 [BG89、BRG89、HG83、GM86、W90] 和超大指令字 (VLIW) 机器 [E85]。<font style="color:#DF2A3F;">对于具有 n 个功能单元的机器</font>，其想法是能够每个周期执行多达 n 条指令，而对于<font style="color:#DF2A3F;">流水线机器</font>，目标是每个周期发出一条新指令，从而有效地消除所谓的 NOPS（无操作）。
+此前，指令级的调度算法被建议用于具有多个功能单元的处理器 [BJR89]、流水线机器 [BG89、BRG89、HG83、GM86、W90] 和超长指令字 (VLIW) 机器 [E85]。<font style="color:#DF2A3F;">对于具有 n 个功能单元的机器</font>，其想法是能够每个周期执行多达 n 条指令，而对于<font style="color:#DF2A3F;">流水线机器</font>，目标是每个周期发出一条新指令，从而有效地消除所谓的 NOPS（无操作）。
 
 
 
@@ -74,9 +74,11 @@ Virtually, all of the previous work on the implementation of instruction schedul
 
 
 
-Even for basic RISC architectures such restricted type of scheduling may result in code with many NOPS for certain Unixl -type programs that include many small basic blocks terminated by unpredictable branches. 
+Even for basic RISC architectures such restricted type of scheduling may result in code with many NOPS for certain Unix-type programs that include many small basic blocks terminated by unpredictable branches. 
 
-即使对于基本的 RISC 架构，这种受限类型的调度也可能会导致某些 Unixl 类型程序的代码具有许多 NOPS，其中包含许多由不可预测的分支终止的小基本块。
+即使对于基本的 RISC 架构，这种受限类型的调度也可能会导致某些 Unix 类型程序的代码具有许多 NOPS，其中包含许多由不可预测的分支终止的小基本块。
+
+> Unix 是 AT&T 贝尔实验室的商标
 
 
 
