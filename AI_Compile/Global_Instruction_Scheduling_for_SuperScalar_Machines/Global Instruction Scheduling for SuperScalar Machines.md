@@ -100,9 +100,9 @@ This type of high speed processors, called <font style="color:#DF2A3F;">supersca
 
 
 
-One recent effort to pursue instruction scheduling for superscalar machines was reported in [GR90], where code ,replication techniques for scheduling beyond the scope of basic blocks were investigated, resulting in fair improvements of running time of the compiled code, Also, one can view a superscalar processor as a VLIW machine with a small number of resources. 
+One recent effort to pursue instruction scheduling for superscalar machines was reported in [GR90], where `code replication techniques` for scheduling beyond the scope of basic blocks were investigated, resulting in fair improvements of running time of the compiled code, Also, one can view a superscalar processor as a VLIW machine with a small number of resources. 
 
-[GR90] 报道了最近对超标量机器指令调度的一项努力，其中研究了超出基本块范围的调度的代码复制技术，从而公平地提高了编译代码的运行时间，此外，人们可以将超标量处理器视为具有少量资源的 VLIW 机器。
+[GR90] 报道了最近对超标量机器指令调度的一项工作，其中研究了 `code replication techniques` 的调度技术超出基本块范围，从而公平地提高了编译代码的运行时间，此外，人们可以将超标量处理器视为具有少量资源的 VLIW 机器。
 
 
 
@@ -172,7 +172,7 @@ Also, we do not overlap the execution of instructions that belong to different i
 
 
 
-For speculative instructions, previously-it was suggested that they have to be supported by the machine architecture [ESS, SLH90]. 
+For speculative instructions, previously-it was suggested that they have to be supported by the machine architecture [E88, SLH90]. 
 
 对于推测指令，以前有人建议它们必须得到机器架构的支持[ESS，SLH90]。
 
@@ -192,7 +192,7 @@ We have implemented our scheme in the context of the IBM XL family of compilers 
 
 The preliminary performance results for our scheduling prototype were based on a set of SPEC benchmarks [ss9]. 
 
-我们的调度原型的初步性能结果基于一组 SPEC 基准 [ss9]。
+我们的调度原型的初步性能结果基于一组 SPEC 基准 [s89]。
 
 
 
@@ -225,6 +225,8 @@ Finally, in Section 6 we bring some performance results and conclude in Section 
 
 
 <h2 id="gVwhj">Parametric machine description</h2>
+
+
 Our model of a superscalar machine is based on the description of a typical RISC processor whose only instructions that reference memory are load and store instructions, while all the computations are done in registers. 
 
 我们的超标量机器模型基于<font style="color:#DF2A3F;">典型 RISC 处理器的描述</font>，其<font style="color:#DF2A3F;">引用内存的唯一指令是加载和存储指令</font>，而所有计算都在寄存器中完成。
@@ -267,7 +269,7 @@ A program instruction requires an integral number of machine cycles to be execut
 
 Also, there are pipelined constraints imposed on the execution of instructions which are modelled by the integer delays assigned to the data dependence edges of the computational graph.
 
-此外，指令的执行还受到流水线约束，**这些约束由分配给计算图的数据依赖边的整数延迟建模**。
+此外，指令的执行还受到流水线约束，这些约束由 分配给计算图的数据依赖边的整数延迟 建模。
 
 Let L1 and L2 be two instructions such that the edge (L1,L2)is a data dependence edge. 
 
@@ -289,36 +291,39 @@ More information about the notion of delays due to pipelined constraints can be 
 
 有关由于流水线约束导致的延迟概念的更多信息，可以在[BG89，BRG89]中找到。
 
-ere we show how our generic model of a superscalar machine is cotilgured to fit the RS/6K machine. The RS/6K processor is modelled as follows:
-
 <h3 id="gVwhj">The RS/6K model</h3>
+
+
+Here we show how our generic model of a superscalar machine is cotilgured to fit the RS/6K machine. The RS/6K processor is modelled as follows:
 
 这里我们展示了如何将我们的超标量机器通用模型与 RS/6K 机器进行匹配。RS/6K 处理器的模型如下：
 
 - m = 3, there are three types of functional units: fixed point, floating point and branch types.
+- m = 3，功能单元有三种类型：定点型、浮点型和分支型。
 
-m = 3，功能单元有三种类型：定点型、浮点型和分支型。
 - n1= 1, n2= 1, n3= 1, there is a single fixed point unit, a single floating point unit and a single branch unit.
+- n1= 1，n2= 1，n3= 1，有一个定点单元、一个浮点单元和一个分支单元。
 
-n1= 1，n2= 1，n3= 1，有一个定点单元、一个浮点单元和一个分支单元。
 - Most of the instructions are executed in one cycle, however, there are also multi-cycle instructions, like multiplication, division, etc
+- 大多数指令在一个周期内执行，但也存在多周期指令，例如乘法、除法等
 
-大多数指令在一个周期内执行，但也存在多周期指令，例如乘法、除法等
 - There are four main types of delays:
+- 延迟主要有四种类型：
+  - a delay of one cycle between a load instruction and the instruction that uses its result register (delayed load);
+  - 加载指令和使用其结果寄存器的指令之间有一个周期的延迟（deploed load）；
 
-延迟主要有四种类型：
-- a delay of one cycle between a load instruction and the instruction that uses its result register (delayed Zoad);
+  - a delay of three cycles between a fixed point compare instruction and the branch instruction that uses the result of that compare;
+  - 定点比较指令与使用该比较结果的分支指令之间有三个周期的延迟；
+  > More precisely, usually the three cycle delay between a fixed point compare and the respective branch instruction is
+encountered only when the branch is taken. However, here for simplicity we assume that such delay exists whether
+the branch is taken or not.
+  > 更准确地说，通常只有在执行分支时才会遇到定点比较和相应分支指令之间的三个周期延迟。然而，为了简单起见，我们假设无论是否执行分支，这种延迟都存在。
 
-加载指令和使用其结果寄存器的指令之间有一个周期的延迟（延迟 Zoad）；
-- a delay of three cycles between a fixed point compare instruction and the branch instruction that uses the result of that compare2;
+  - a delay of one cycle between a floating point instruction and the instruction that uses its result;
+  - 浮点指令与使用其结果的指令之间有一个周期的延迟；
 
-定点比较指令和使用该 compare2 结果的分支指令之间有三个周期的延迟；
-- a delay of one cycle between a floating point instruction and the instruction that uses its result;
-
-浮点指令与使用其结果的指令之间有一个周期的延迟；
-- a delay of five cycles between a floating point compare instruction and the branch instruction that uses the result of that compare.
-
-浮点比较指令与使用该比较结果的分支指令之间存在 5 个周期的延迟。
+  - a delay of five cycles between a floating point compare instruction and the branch instruction that uses the result of that compare.
+  - 浮点比较指令与使用该比较结果的分支指令之间存在 5 个周期的延迟。
 
 There are a few additional delays in the machine whose effect is secondary.
 
@@ -328,7 +333,7 @@ In this paper we concentrate on fixed point computations only. Therefore, only t
 
 在本文中我们只关注定点计算。因此，我们只考虑上述第一种和第二种类型的延迟。
 
-A program example
+# A program example
 Next, we present a small program (written in C) that computes the minimum and the maximum of an array. 
 
 接下来，我们将提供一个小程序（用 C 编写），计算数组的最小值和最大值。
