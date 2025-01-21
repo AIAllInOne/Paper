@@ -263,9 +263,22 @@ A program instruction requires an integral number of machine cycles to be execut
 
 一条程序指令需要由该类型的某个功能单元执行整数个机器周期。
 
-
-
 Also, there are pipelined constraints imposed on the execution of instructions which are modelled by the integer delays assigned to the data dependence edges of the computational graph.
 
-此外，指令的执行还受到流水线约束，这些约束由分配给计算图的数据依赖边的整数延迟建模。
+此外，指令的执行还受到流水线约束，**这些约束由分配给计算图的数据依赖边的整数延迟建模**。
+
+Let L1 and L2 be two instructions such that the edge (L1,L2)is a data dependence edge. 
+令 L1 和 L2 为两个指令，边 (L1,L2) 为数据依赖边。
+
+Let t(t >= 1) be the execution time of L1 and d (d >= 0) be the delay assigned to (L1,L2). 
+令 t(t >= 1) 为 L1 的执行时间，d (d >= 0) 为分配给 (L1,L2) 的延迟。
+
+For performance purposes, if L1 is scheduled to start at time k, then L2 should be scheduled to start no earlier than k + t + d. 
+出于性能目的，如果 L1 计划在时间 k 启动，则 L2 应计划不早于 k + t + d 启动。
+
+Notice, however, that if L2 is scheduled (by the compiler) to start earlier than mentioned above, this would not affect the correctness of the program, since we assume that the machine implements hardware interlocks to guarantee the delays at run time. 
+但是，请注意，如果 L2（由编译器）被安排得比上面提到的更早启动，这不会影响程序的正确性，因为我们假设机器实现硬件联锁以保证运行时的延迟。
+
+More information about the notion of delays due to pipelined constraints can be found in [BG89, BRG89].
+有关由于流水线约束导致的延迟概念的更多信息，可以在[BG89，BRG89]中找到。
 
