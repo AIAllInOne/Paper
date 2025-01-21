@@ -19,9 +19,11 @@ A scheme for global (intra-loop) scheduling is proposed, which uses the control 
 
 
 
-This novel scheduling framework is based on the parametric description of the machine architecture, which spans a range of <font style="color:#DF2A3F;">superscakis and VLIW machines</font>, and <font style="color:#DF2A3F;">exploits speculative execution</font> of instructions to further enhance the performance of the general code. 
+This novel scheduling framework is based on the parametric description of the machine architecture, which spans a range of <font style="color:#DF2A3F;">superscalar and VLIW machines</font>, and <font style="color:#DF2A3F;">exploits speculative execution</font> of instructions to further enhance the performance of the general code. 
 
-这种新颖的调度框架基于机器架构的参数描述，涵盖了一系列<font style="color:#DF2A3F;">超级CPU (superscakis) 和VLIW机器 ?</font>，并利用指令的<font style="color:#DF2A3F;">推测执行</font>来进一步提高通用代码的性能。
+这种新颖的调度框架基于机器架构的参数描述，涵盖了一系列<font style="color:#DF2A3F;">超标量 (superscalar) 和VLIW 架构 CPU ?</font>，并利用指令的<font style="color:#DF2A3F;">推测执行</font>来进一步提高通用代码的性能。
+
+> 超长指令字（英语：Very long instruction word，缩写：VLIW）指的是一种被设计为可以利用指令级并行（ILP）优势的CPU体系结构。一个按照顺序执行指令的非超标量处理器不能充分的利用处理器的资源，有可能导致低性能。
 
 
 
