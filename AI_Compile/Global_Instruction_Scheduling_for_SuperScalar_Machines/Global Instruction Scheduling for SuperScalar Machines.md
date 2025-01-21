@@ -336,7 +336,7 @@ In this paper we concentrate on fixed point computations only. Therefore, only t
 
 在本文中我们只关注定点计算。因此，我们只考虑上述第一种和第二种类型的延迟。
 
-## A program example
+## 3. A program example
 
 
 Next, we present a small program (written in C) that computes the minimum and the maximum of an array. 
@@ -466,7 +466,7 @@ Taking into consideration that the fixed point unit and the branch unit run in p
 
 考虑到定点单元和分支单元并行运行，我们估计代码执行需要 20、21 或 22 个周期，具体取决于是否分别完成 max 和 min 变量（LR 指令）的 0、1 或 2 次更新。
 
-## The Program Dependence Graph
+## 4. The Program Dependence Graph
 
 The program dependence graph is a convenient way to summarize both the control dependence and data dependence among the code instructions, While the concept of data dependence, that carries the basic idea of one instruction computing a data value and another instruction using this value, was employed in compilers a long time ago, the notion of control dependence was introduced quite recently [FOW87]. 
 
@@ -476,7 +476,8 @@ In what follows we discuss the notions of control and data dependence separately
 
 接下来我们分别讨论控制和数据依赖的概念。
 
-Control dependences
+### 4.1 Control dependences
+
 We describe the idea of control dependence using the program example of Figure 1. 
 
 我们使用图 1 的程序示例来描述控制依赖的想法。
@@ -484,6 +485,8 @@ We describe the idea of control dependence using the program example of Figure 1
 In Figure 3 the control flow graph of the loop of Figure 2 is described, where each node corresponds to a single basic block in the loop. 
 
 图 3 描述了图 2 的循环的控制流图，其中每个节点对应循环中的一个基本块。
+
+![image](https://github.com/user-attachments/assets/4bf97ba7-8cad-4467-86c8-e5ce24052760)
 
 The numbers inside the circles denote the indices of the ten basic blocks BL1-BL1O. \
 
@@ -505,9 +508,135 @@ In our case BL10 is a (single) exit node.
 
 在我们的例子中，BL10 是一个（单个）出口节点。
 
-For the strongIy connected regions (that represent loops in this context), the assumption of a control flow graph having a single entry corresponds to the assumption that the control flow graph is reducible.
+For the strongly connected regions (that represent loops in this context), the assumption of a control flow graph having a single entry corresponds to the assumption that the control flow graph is reducible.
 
-对于强连通区域（在此上下文中表示循环），控制流图具有单个条目的假设对应于控制流图可约化的假设。
+对于强连通区域（在此上下文中表示循环），控制流图具有单个 Entry 的假设对应于控制流图可约化的假设。
+> "is reducible"（是可减的）指的是控制流图具有"可约"性质。可约控制流图是指那些可以通过消除循环来简化的图，通常包含一个单一的入口点。
 
+The meaning of an edge from a node A to a node B in a control flow graph is that the control of the program may flow from the basic block A to the basic block B. 
 
+控制流图中从节点A到节点B的边的含义是程序的控制可以从基本块A流向基本块B。
 
+(UsuaUy, edges are annotated with the conditions that control the flow of the program from one basic block to another.) From the graph of Figure 3 however, it is not apparent which basic block will be executed under which condition. 
+
+（通常，边用控制程序从一个基本块到另一个基本块的流程的条件来注释。）然而，从图 3 的图中，无法清楚地看出哪个基本块将在哪种条件下执行。
+
+The control subgraph of the PDG (CSPDG) of the loop of Figure 2 is shown in Figure 4. As in Figure 3, each node of the graph corresponds to a basic block of the program. Here, a solid edge from a node A to a node B has the following meaning:
+
+图 4 显示了图 2 循环的 PDG（CSPDG）的控制子图。与图 3 一样，图中的每个节点对应于程序的一个基本块。这里，从节点 A 到节点 B 的实线边具有以下含义：
+
+![image](https://github.com/user-attachments/assets/2bad3765-33a4-4086-a6e9-83faaff6e627)
+
+1. there is a condition COND in the end of A that is evaluated to either TRUE or FALSE, and
+1. A 末尾有一个条件 COND，其结果要么为 TRUE，要么为 FALSE，并且
+   
+2. if COND is evaluated to TRUE, B will definitely be executed, othenvise B will not be executed.
+2. 如果 COND 的结果为 TRUE，则 B 一定会被执行，否则 B 不会被执行。
+
+The control dependence edges are annotated with the corresponding conditions as for the control flow graph. In Figure 4 solid edges designate control dependence edges, while dashed edges will be discussed below. 
+
+控制依赖边标注了控制流图中的相应条件。图 4 中的实线边表示控制依赖边，虚线边将在下文讨论。
+
+For example, in Figure 4 the edges emanating from BL1 indicate that BL2 and BL4 will be executed if the condition at the end of BL1 will be evaluated to TRUE, while BL6 and BL8 will be executed while the same condition is FALSE.
+
+例如，在图 4 中，从 BL1 发出的边表示如果 BL1 末尾的条件被评估为 TRUE，则将执行 BL2 和 BL4，而当相同条件为 FALSE 时，将执行 BL6 和 BL8。
+
+As was mentioned in the introduction, currently we schedule instructions within a single iteration of a loop. 
+正如介绍中提到的，目前我们在循环的单次迭代中调度指令。
+
+So, for the purposes of this type of instruction scheduling, we follow [CHH89] and build the forwa-d control dependence graph only, i.e. we do not compute the control dependence that result from or propagate through the back edges in the control flow graph. 
+
+因此，出于这种类型的指令调度的目的，我们遵循 [CHH89] 并仅构建前向控制依赖图，即，我们不计算由控制流图中的后向边缘引起或传播的控制依赖性。
+
+The CSPDG of Figure 4 is a forward control dependence graph. In the following we discuss forward control dependence graphs only. Notice that forward control dependence graphs are acyclic
+
+图 4 中的 CSPDG 是一个前向控制依赖图。下面我们只讨论前向控制依赖图。请注意，前向控制依赖图是非循环的
+
+The usefulness of the control subgraph of PDG stems from the fact that basic blocks that have the same set of control dependence (like BL 1 and BL1O, or BL2 and BL4, or BL6 and BL8 in Figure 4) can be executed in parallel up to the existing data dependence. 
+
+PDG 控制子图的实用性源于这样一个事实：具有相同控制依赖关系的基本块（如图 4 中的 BL 1 和 BL1O、BL2 和 BL4 或 BL6 和 BL8）可以并行执行，直至达到现有的数据依赖性。
+
+For our purposes, the instructions of such basic blocks can be scheduled together.
+
+就我们的目的而言，这些基本块的指令可以一起调度。
+
+Now let us introduce several deffitions that are required to understand our scheduling framework. 
+
+现在让我们介绍理解我们的调度框架所需的几个定义。
+
+Let A and B be two nodes of a control flow graph such that B is reachable from A, i.e., there is a path in the control flow graph from A to B
+
+假设 A 和 B 是控制流图的两个节点，并且 B 可以从 A 到达，即控制流图中存在从 A 到 B 的路径
+
+Definition 1. A dominates B if and only if A appears on every path from ENTRY to B
+
+Definition 1. 当且仅当 A 出现在从 ENTRY 到 B 的每条路径上时，A 才支配(deminates) B
+
+Definition 2. B postdominates A if and only if B appears on every path from A to EXIT.
+
+Definition 2. 当且仅当 B 出现在从 A 到 EXIT 的每条路径上时，B 才后支配(postdominates) A。
+
+Definition 3. A and B are equivalent if and only if A dominates B and B postdorninates A.
+
+Definition 3. 当且仅当 A 支配 B 且 B 后支配 A 时，A 和 B 等价。
+
+Definition 4. We say that moving an instruction from B to A is useful if and only if.4 and B are equivalent.
+
+Definition 4. 当且仅当 4 和 B 等价时，我们说将指令从 B 移动到 A 是有用的。
+
+Definition 5. We say that moving an instruction from B to A is speculative if B does not postdorninate A.
+
+Definition 5. 如果 B 不后支配 A，我们说将指令从 B 移动到 A 是推测性的。
+
+Definition 6. We say that moving an instruction from B to A requires duplication if A does not dominate B.
+
+Definition 6. 如果 A 不支配 B，我们说将指令从 B 移动到 A 需要重复。
+
+It turns out that CSPDGs are helpful while doing useful scheduling. To find equivalent nodes, we search a CSPDG for nodes that are identically
+control dependent, i.e. they depend of “the same set of nodes under the same conditions. 
+
+事实证明，CSPDGS 在进行有用的调度时很有用。为了找到等效节点，我们在 CSPDG 中搜索相同控制依赖的节点，即它们在相同条件下依赖于“同一组节点”。
+
+For example, in Figure 4, BL 1 and B L 10 are equivalent, since they do not depend on any node. Also, BL2 and BL4 are equivalent, since both of them depend on
+BL1 under the TRUE condition. 
+
+例如，在图 4 中，BL 1 和 B L 10 是等效的，因为它们不依赖于任何节点。此外，BL2 和 BL4 是等效的，因为它们都在 TRUE 条件下依赖于 BL1。
+
+In Figure 4 we mark the equivalent nodes with dashed edges, the direction of these edges provides the dominance relation between the nodes. 
+
+在图 4 中，我们用虚线边标记等效节点，这些边的方向提供了节点之间的支配关系。
+
+For example, for equivalent nodes BL 1 and BL10, we conclude that BLI dominates BL1O.
+
+例如，对于等效节点 BL 1 和 BL10，我们得出结论，BLI 支配 BL1O。
+
+CSPDG is useful also for speculative scheduling. It provides “the degree of speculativeness” for moving instructions from one block to another. 
+
+CSPDG 也适用于推测调度。它为将指令从一个块移动到另一个块提供了“推测程度”。
+
+When scheduling a speculative instruction, we always “gamble” on the outcome of one or more branches;
+
+在调度推测指令时，我们总是“赌”一个或多个分支的结果；
+
+only when we guess the direction of these branches correctly, the moved instruction becomes profitable.
+
+只有当我们正确猜测这些分支的方向时，移动的指令才会有利可图。
+
+CSPDG provides for every pair of nodes the number of branches we gamble on (in case of speculative scheduling). 
+
+CSPDG 为每对节点提供了我们赌的分支数（在推测调度的情况下）。
+
+For example, when moving instructions from BL8 to BL 1, we gamble on the outcome of a single branch, since when moving from BL8 to BL1 in Figure 4, we cross a single edge. 
+
+例如，当将指令从 BL8 移动到 BL 1 时，我们会赌单个分支的结果，因为在图 4 中从 BL8 移动到 BL1 时，我们会跨越一条边。
+
+(This is not obvious from the control flow graph of Figure 3.) Similarly, moving from BL5 to BL 1 gambles on the outcome of two branches, since we cross two edges of Figure 4.
+
+（从图 3 的控制流图中看不出这一点。）同样，从 BL5 移动到 BL 1 会赌两个分支的结果，因为我们跨越了图 4 的两个边。
+
+Definition 7: We say that moving instructions from B to A is n-branch speculactive if there exists a path in CSPDG from A to B of length n.
+
+Definition 7：如果在 CSPDG 中存在一条长度为 n 的从 A 到 B 的路径，则我们称将指令从 B 移动到 A 是 n 分支推测性的。
+
+Notice that useful scheduling is O-branch speculative.
+请注意，有用的调度是 O 分支推测性的。
