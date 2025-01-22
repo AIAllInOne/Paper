@@ -466,6 +466,8 @@ Taking into consideration that the fixed point unit and the branch unit run in p
 
 考虑到定点单元和分支单元并行运行，我们估计代码执行需要 20、21 或 22 个周期，具体取决于是否分别完成 max 和 min 变量（LR 指令）的 0、1 或 2 次更新。
 
+> I1, I2, I3, [], [], [], [I4, I12], [], [], [], [I13, I15], [], [], [], [I16, I18], I19, [], [], [], I20 -> 20 cycles
+
 ## 4. The Program Dependence Graph
 
 The program dependence graph is a convenient way to summarize both the control dependence and data dependence among the code instructions, While the concept of data dependence, that carries the basic idea of one instruction computing a data value and another instruction using this value, was employed in compilers a long time ago, the notion of control dependence was introduced quite recently [FOW87]. 
@@ -1078,7 +1080,7 @@ CL.0:
 (I3) C cr7=r12, r0 U>v
 (I19) C cr4=r29,r27 i<n
 (I5) C cr6=r12, r30 u > max
-(I12) C cr6=r0,r30 v > max
+(I12) C cr5=r0,r30 v > max
 (I4) BF CL.4, cr7,0x2/gt
 (I8) C cr7=r0,r28 v < min
 (I6) BF CL.6,cr6,0x2/gt
@@ -1117,3 +1119,6 @@ two instructions will carry a useful result.
 All in all, the program in Figure 6 takes 11-12 cycles per iteration, a one cycle improvement over the program in Figure 5.
 
 总而言之，图 6 中的程序每次迭代需要 11-12 个周期，比图 5 中的程序改进了一个周期。
+
+> I1, I2, I18, I3, I19, I5, I12, [I4, I15], [](I13 依赖的cr6 定义在 I5， 3个 delay), I13, I16, I20  -> 12 cycles
+> I1, I2, I18, I3, I19, I5, I12, [I4, I8], I6, I9, I20  -> 11 cycles
