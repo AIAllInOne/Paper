@@ -696,15 +696,15 @@ The observation in the previous paragraph helps to reduce the number of pairs of
 
 上一段中的观察结果也有助于减少在计算块内数据依赖性时考虑的指令对数量。
 
-Let us demonstrate the computation of data dependence for BL1; we will reference the instructions by their numbers from Figure 2. There is an anti-dependence from (I1) to (12), since (I1) uses r31 and (12) defines a new value for r31. 
+Let us demonstrate the computation of data dependence for BL1; we will reference the instructions by their numbers from Figure 2. There is an anti-dependence from (I1) to (I2), since (I1) uses r31 and (I2) defines a new value for r31. 
 
-让我们演示一下 BL1 数据依赖性的计算；我们将通过图 2 中的编号引用指令。从 (I1) 到 (12) 存在反依赖性，因为 (I1) 使用 r31 并且 (12) 为 r31 定义了一个新值。
+让我们演示一下 BL1 数据依赖性的计算；我们将通过图 2 中的编号引用指令。从 (I1) 到 (I2) 存在反依赖性，因为 (I1) 使用 r31 并且 (I2) 为 r31 定义了一个新值。
 
-There is a flow data dependence from both (I1) and (I2) to (13), since (I3) uses r12 and rO defined in (I1) and (I2), respectively.
+There is a flow data dependence from both (I1) and (I2) to (I3), since (I3) uses r12 and rO defined in (I1) and (I2), respectively.
 
-从 (I1) 和 (I2) 到 (13) 都存在流数据依赖性，因为 (I3) 分别使用了 (I1) 和 (I2) 中定义的 r12 和 rO。
+从 (I1) 和 (I2) 到 (I3) 都存在流数据依赖性，因为 (I3) 分别使用了 (I1) 和 (I2) 中定义的 r12 和 rO。
 
-The edge ((I2),(I3)) carries a one cycle delay, since (I2) is a load instruction (delayed load), while ((I1),(I3)) is not computed since it istransitive. 
+The edge ((I2),(I3)) carries a one cycle delay, since (I2) is a load instruction (delayed load), while ((I1),(I3)) is not computed since it is transitive. 
 
 边 ((I2),(I3)) 带有一个周期的延迟，因为 (I2) 是加载指令（延迟加载），而 ((I1),(I3)) 则无需计算，因为它是传递的。
 
