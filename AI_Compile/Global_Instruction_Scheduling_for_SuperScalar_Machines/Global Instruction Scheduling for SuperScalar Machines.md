@@ -528,10 +528,9 @@ The control subgraph of the PDG (CSPDG) of the loop of Figure 2 is shown in Figu
 ![image](https://github.com/user-attachments/assets/2bad3765-33a4-4086-a6e9-83faaff6e627)
 
 1. there is a condition COND in the end of A that is evaluated to either TRUE or FALSE, and
-1. A 末尾有一个条件 COND，其结果要么为 TRUE，要么为 FALSE，并且
-   
+A 末尾有一个条件 COND，其结果要么为 TRUE，要么为 FALSE，并且
 2. if COND is evaluated to TRUE, B will definitely be executed, othenvise B will not be executed.
-2. 如果 COND 的结果为 TRUE，则 B 一定会被执行，否则 B 不会被执行。
+如果 COND 的结果为 TRUE，则 B 一定会被执行，否则 B 不会被执行。
 
 The control dependence edges are annotated with the corresponding conditions as for the control flow graph. In Figure 4 solid edges designate control dependence edges, while dashed edges will be discussed below. 
 
@@ -592,23 +591,27 @@ Definition 6. We say that moving an instruction from B to A requires duplication
 
 Definition 6. 如果 A 不支配 B，我们说将指令从 B 移动到 A 需要重复。
 
+Definition 7: We say that moving instructions from B to A is n-branch speculactive if there exists a path in CSPDG from A to B of length n.
+
+Definition 7：如果在 CSPDG 中存在一条长度为 n 的从 A 到 B 的路径，则我们称将指令从 B 移动到 A 是 n 分支推测性的。
+
 It turns out that CSPDGs are helpful while doing useful scheduling. To find equivalent nodes, we search a CSPDG for nodes that are identically
 control dependent, i.e. they depend of “the same set of nodes under the same conditions. 
 
 事实证明，CSPDGS 在进行有用的调度时很有用。为了找到等效节点，我们在 CSPDG 中搜索相同控制依赖的节点，即它们在相同条件下依赖于“同一组节点”。
 
-For example, in Figure 4, BL 1 and B L 10 are equivalent, since they do not depend on any node. Also, BL2 and BL4 are equivalent, since both of them depend on
+For example, in Figure 4, BL 1 and BL 10 are equivalent, since they do not depend on any node. Also, BL2 and BL4 are equivalent, since both of them depend on
 BL1 under the TRUE condition. 
 
-例如，在图 4 中，BL 1 和 B L 10 是等效的，因为它们不依赖于任何节点。此外，BL2 和 BL4 是等效的，因为它们都在 TRUE 条件下依赖于 BL1。
+例如，在图 4 中，BL 1 和 BL 10 是等效的，因为它们不依赖于任何节点。此外，BL2 和 BL4 是等效的，因为它们都在 TRUE 条件下依赖于 BL1。
 
 In Figure 4 we mark the equivalent nodes with dashed edges, the direction of these edges provides the dominance relation between the nodes. 
 
 在图 4 中，我们用虚线边标记等效节点，这些边的方向提供了节点之间的支配关系。
 
-For example, for equivalent nodes BL 1 and BL10, we conclude that BLI dominates BL1O.
+For example, for equivalent nodes BL1 and BL10, we conclude that BL1 dominates BL1O.
 
-例如，对于等效节点 BL 1 和 BL10，我们得出结论，BLI 支配 BL1O。
+例如，对于等效节点 BL1 和 BL10，我们得出结论，BL1 支配 BL1O。
 
 CSPDG is useful also for speculative scheduling. It provides “the degree of speculativeness” for moving instructions from one block to another. 
 
@@ -626,17 +629,97 @@ CSPDG provides for every pair of nodes the number of branches we gamble on (in c
 
 CSPDG 为每对节点提供了我们赌的分支数（在推测调度的情况下）。
 
-For example, when moving instructions from BL8 to BL 1, we gamble on the outcome of a single branch, since when moving from BL8 to BL1 in Figure 4, we cross a single edge. 
+For example, when moving instructions from BL8 to BL1, we gamble on the outcome of a single branch, since when moving from BL8 to BL1 in Figure 4, we cross a single edge. 
 
-例如，当将指令从 BL8 移动到 BL 1 时，我们会赌单个分支的结果，因为在图 4 中从 BL8 移动到 BL1 时，我们会跨越一条边。
+例如，当将指令从 BL8 移动到 BL1 时，我们会赌单个分支的结果，因为在图 4 中从 BL8 移动到 BL1 时，我们会跨越一条边。
 
 (This is not obvious from the control flow graph of Figure 3.) Similarly, moving from BL5 to BL 1 gambles on the outcome of two branches, since we cross two edges of Figure 4.
 
-（从图 3 的控制流图中看不出这一点。）同样，从 BL5 移动到 BL 1 会赌两个分支的结果，因为我们跨越了图 4 的两个边。
+（从图 3 的控制流图中看不出这一点。）同样，从 BL5 移动到 BL1 会赌两个分支的结果，因为我们跨越了图 4 的两个边。
 
-Definition 7: We say that moving instructions from B to A is n-branch speculactive if there exists a path in CSPDG from A to B of length n.
-
-Definition 7：如果在 CSPDG 中存在一条长度为 n 的从 A 到 B 的路径，则我们称将指令从 B 移动到 A 是 n 分支推测性的。
 
 Notice that useful scheduling is O-branch speculative.
 请注意，有用的调度是 O 分支推测性的。
+
+### 4.2 Data dependences
+
+While control dependence are computed at a basic block level, data dependencies are computed on an instruction by instruction basis. 
+
+虽然控制依赖性是在基本块级别计算的，但数据依赖性是逐条指令计算的。
+
+We compute both intrablock and interlock data dependencies. A data dependence may be caused by the usage of registers or by accessing memory locations.
+
+我们计算块内和互锁数据依赖性。数据依赖性可能是由寄存器的使用或访问内存位置引起的。
+
+Let a and b be two instructions in the code. A data dependence edge from a to b is inserted into PDG in one of the following cases:
+
+假设 a 和 b 是代码中的两条指令。在下列情况之一中，将从 a 到 b 的数据依赖边插入到 PDG 中：
+
+- A register defined in a is used in b (flow dependence);
+- a 中定义的寄存器在 b 中使用（流依赖性）；
+- A register used in a is defined in b (anti-dependence);
+- a 中使用的寄存器在 b 中定义（反依赖性）；
+- A register defined in a is defined in b (output dependence);
+- a 中定义的寄存器在 b 中定义（输出依赖性）；
+- Both a and b we instructions that touch memory (loads, stores, calls to subroutines) and it is not proven that they address different locations (memory disambiguation)
+- a 和 b 都是触及内存的指令（加载、存储、调用子例程），并且无法证明它们寻址不同的位置（内存消歧义）
+
+Only the data dependence edges leading from a definition of a register to its use carry a (potentially non-zero) delay, which is a characteristic of the underlying machine, as was mentioned in Section 2.
+
+只有从寄存器定义到其使用的数据依赖边缘才会产生（可能非零的）延迟，这是底层机器的特性，如第 2 节所述。
+
+The rest of the data dependence edges carry zero delays. To minimize the number of anti and output data dependence, which may unnecessarily constrain the scheduling process, the XL compiler does certain renaming of registers, which is similar to the effect of the static single assignment form [CFRWZ].
+
+其余数据依赖边带有零延迟。为了尽量减少反数据和输出数据依赖的数量（这可能会不必要地限制调度过程），XL 编译器对寄存器进行了某些重命名，这类似于静态单赋值形式 [CFRWZ] 的效果。
+
+To compute all the data dependence in a basic block, essentially every pair of instructions there has to be considered. 
+
+为了计算基本块中的所有数据依赖性，基本上必须考虑其中的每一对指令。
+
+However, to reduce the compilation time, we take advantage of the following observation. Let a, b and c be three instructions in the code. 
+
+然而，为了减少编译时间，我们利用以下观察。让 a、b 和 c 成为代码中的三条指令。
+
+Then, if we discover that there is a data dependence edge from a to b and from b to c, there is no need to compute the edge from a to c. 
+
+然后，如果我们发现从 a 到 b 和从 b 到 c 存在数据依赖边，则无需计算从 a 到 c 的边。
+
+To use this observation, the basic block instructions are traversed in an order such that when we come to determine the dependency between a and c, we have already considered the pairs (a,b) and (b,c), for every possible b in a basic block. (Actually, we compute the transitive closure for the data dependence relation in a basic block.)
+
+为了利用这一观察结果，基本块指令按以下顺序遍历：当我们确定 a 和 c 之间的依赖关系时，我们已经考虑了基本块中每个可能的 b 的对 (a,b) 和 (b,c)。（实际上，我们计算基本块中数据依赖关系的传递闭包。）
+
+Next for each pair A and B of basic blocks such that B is reachable from A in the control flow graph, the intrablock data dependence are computed. 
+
+接下来，对于控制流图中可以从 A 到达的每对基本块 A 和 B，计算块内数据依赖性。
+
+The observation in the previous paragraph helps to reduce the number of pairs of instructions that are considered during the computation of the intrablock data dependence as well.
+
+上一段中的观察结果也有助于减少在计算块内数据依赖性时考虑的指令对数量。
+
+Let us demonstrate the computation of data dependence for BL1; we will reference the instructions by their numbers from Figure 2. There is an anti-dependence from (I1) to (12), since (I1) uses r31 and (12) defines a new value for r31. 
+
+让我们演示一下 BL1 数据依赖性的计算；我们将通过图 2 中的编号引用指令。从 (I1) 到 (12) 存在反依赖性，因为 (I1) 使用 r31 并且 (12) 为 r31 定义了一个新值。
+
+There is a flow data dependence from both (I1) and (I2) to (13), since (I3) uses r12 and rO defined in (I1) and (I2), respectively.
+
+从 (I1) 和 (I2) 到 (13) 都存在流数据依赖性，因为 (I3) 分别使用了 (I1) 和 (I2) 中定义的 r12 和 rO。
+
+The edge ((I2),(I3)) carries a one cycle delay, since (I2) is a load instruction (delayed load), while ((I1),(I3)) is not computed since it istransitive. 
+
+边 ((I2),(I3)) 带有一个周期的延迟，因为 (I2) 是加载指令（延迟加载），而 ((I1),(I3)) 则无需计算，因为它是传递的。
+
+There is a flow data dependence edge from (I3) to (I4), since (I3) sets cr7 which is used in (I4). 
+
+从 (I3) 到 (I4) 存在流数据依赖性边，因为 (I3) 设置了 (I4) 中使用的 cr7。
+
+This edge has a three cycle delay, since (I3) is a compare instruction and (I4) is the corresponding branch instruction. 
+
+该边有三个周期的延迟，因为 (I3) 是比较指令，而 (I4) 是相应的分支指令。
+
+Finally, both of ((I1),(I4)) and ((I2),(I4)) are transitive edges.
+
+最后，((I1),(I4)) 和 ((I2),(I4)) 都是传递边。
+
+It is important to notice that, since both the control and data dependence we compute are acyclic, the resultant PDG is acyclic as well. This facilitates convenient scheduling of instructions which is discussed next.
+
+需要注意的是，由于我们计算的控制和数据依赖性都是非循环的，因此得到的 PDG 也是非循环的。这有助于方便地安排接下来要讨论的指令。
