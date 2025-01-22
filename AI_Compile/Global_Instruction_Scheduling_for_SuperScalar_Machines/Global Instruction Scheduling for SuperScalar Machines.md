@@ -1005,3 +1005,115 @@ Then, x (or actually a symbolic register that correspondsto x) becomes live on e
 More detailed description ofthe speculative scheduling and its relationship to the PDG-based global scheduling is out of the scope of this paper.
 
 有关推测调度及其与基于 PDG 的全局调度的关系的更详细描述超出了本文的范围。
+
+5.4 Scheduling examples
+
+Let us demonstrate the effect of useful and speculative scheduling on the example of Figure 2.
+
+让我们演示一下有用调度和推测调度对图 2 示例的影响。
+
+The result of scheduling useful instructions only to this program is presented in Figure 5. 
+
+图 5 显示了仅将有用指令调度到该程序的结果。
+
+Figure 5. The result of applying the useful scheduling to the program of Figure 2
+
+```
+. . . more instructions here . . .
+*************** LOOP STARTS *******************
+CL.0:
+(I1) L r12=a(r31,4) 1oad u
+(I2) LU rO, r31=a(r31,8) load v and increment index
+(I18) AI r29=r29,2 i =i+2
+(I3) C cr7=r12, r0 U>v
+(I19) C cr4=r29,r27 i<n
+(I4) BF CL.4, cr7,0x2/gt
+(I5) C cr6=r12, r30 u > max
+(I8) C cr7=r0,r28 v < min
+(I6) BF CL.6,cr6,0x2/gt
+(I7) LR r30=r12 max = u
+CL.6:
+(I9) BF CL.9,cr7,0xl/lt
+(I10) LR r28=r0 min = v
+(I11) B CL.9
+CL.4:
+(I12) C cr6=r0,r30 v > max
+(I15) C cr7=r12,r28 u < min
+(I13) BF CL.11,cr6,0x2/gt
+(I14) LR r30=r0 max = v
+CL.11:
+(I16) BF CL.9,cr7,0xl/lt
+(I17) LR r28=r12 min = u
+CL.9:
+(I20) BT CL.0,cr4,0xl/lt
+*************** LOOP ENDS **********************
+. . . more instructions here . . .
+```
+
+During the scheduling of BL1, the only instmctions that were considered to be moved there were those of BL10, since only BL1O ∈ EQUIV(BL1). 
+
+在 BL1 调度期间，唯一被认为移动到那里的指令是 BL10 指令，因为只有 BL1O ∈ EQUIV(BL1)。
+
+The result is that two instructions of BL10(I18 and I19) were moved into BL1, filling in the delay slots of the instructions there. 
+
+结果是 BL10 的两个指令（I18 和 I19）被移动到 BL1，填补了那里指令的延迟槽。
+
+Similarly, I8 was moved from BL4 to BL2, and I15 was moved from BL8 to BL6,
+
+类似地，I8 从 BL4 移动到 BL2，I15 从 BL8 移动到 BL6，
+
+The resultant program in Figure5 takes 12-13 cycles per iteration, while the original program of Figure 2 was executing in 20-22 cycles per iteration.
+
+图 5 中的结果程序每次迭代需要 12-13 个周期，而图 2 中的原始程序每次迭代需要 20-22 个周期。
+
+Figure 6. The result of applying the useful and speculative scheduling to the program of Figure 2
+
+```
+. . . more instructions here . . .
+*************** LOOP STARTS *******************
+CL.0:
+(I1) L r12=a(r31,4) 1oad u
+(I2) LU rO, r31=a(r31,8) load v and increment index
+(I18) AI r29=r29,2 i =i+2
+(I3) C cr7=r12, r0 U>v
+(I19) C cr4=r29,r27 i<n
+(I5) C cr6=r12, r30 u > max
+(I12) C cr6=r0,r30 v > max
+(I4) BF CL.4, cr7,0x2/gt
+(I8) C cr7=r0,r28 v < min
+(I6) BF CL.6,cr6,0x2/gt
+(I7) LR r30=r12 max = u
+CL.6:
+(I9) BF CL.9,cr7,0xl/lt
+(I10) LR r28=r0 min = v
+(I11) B CL.9
+CL.4:
+(I15) C cr7=r12,r28 u < min
+(I13) BF CL.11,cr6,0x2/gt
+(I14) LR r30=r0 max = v
+CL. 11:
+(I16) BF CL.9,cr7,0xl/lt
+(I17) LR r28=r12 min = u
+CL.9:
+(I20) BT CL.0,cr4,0xl/lt
+*************** LOOP ENDS **********************
+. . . more instructions here . . .
+```
+
+
+Figure 6 shows the result ofapplying both the useful and the (1-branch) speculative scheduling to the same program. 
+
+图 6 显示了将有用调度和（1 分支）推测调度应用于同一程序的结果。
+
+In addition to the motions that were described above, two additional instructions (I5 and I12) were moved speculatively to BL1, to fill in the three cycle delay between I3 and I4.
+
+除了上面描述的移动之外，还有两个附加指令（I5 和 I12）被推测移动到 BL1，以填补 I3 和 I4 之间的三个周期延迟。
+
+Interestingly enough, since I5 and I12 belong to basic blocks that are never executed together in any single execution of the program, only one of these
+two instructions will carry a useful result. 
+
+有趣的是，由于 I5 和 I12 属于在程序的任何一次执行中永远不会一起执行的基本块，因此这两个指令中只有一个会携带有用的结果。
+
+All in all, the program in Figure 6 takes 11-12 cycles per iteration, a one cycle improvement over the program in Figure 5.
+
+总而言之，图 6 中的程序每次迭代需要 11-12 个周期，比图 5 中的程序改进了一个周期。
