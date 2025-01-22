@@ -353,10 +353,10 @@ Figure 1. A program computing the minimum and the maximum of an array
 in a given array */
 minmax(a,n) {
 int i,u,v,min,max,n,a[SIZE];
-min=a[O]; max=min; i=l;
+min=a[O]; max=min; i=1;
 /****************** LOOP STARTS *************/
 while (i <n) {
-    u=a[i]; v=a[i+l];
+    u=a[i]; v=a[i+1];
     if (u>v) {
         if (u>max) max=u;
         if (v<min) min=v;
