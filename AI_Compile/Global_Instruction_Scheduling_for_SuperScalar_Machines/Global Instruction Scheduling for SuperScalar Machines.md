@@ -860,3 +860,97 @@ To solve this problem, the basic block scheduler is applied to every single basi
 The basic block scheduler has a more detailed model of the machine which allows more precise decisions for reordering the instructions within the basic blocks
 
 基本块调度程序具有更详细的机器模型，可以更精确地决定对基本块内的指令进行重新排序
+
+### 5.2 Scheduling heuristics
+
+The heart of the scheduling scheme is a set of heuristics that provide the relative priority of an instruction to be scheduled next. 
+
+调度方案的核心是一组启发式方法，它们提供接下来要调度的指令的相对优先级。
+
+There are two integer-valued functions that are computed locally (within a basic block) for every instruction in the code, these functions are used to set the priority of instructions in the program.
+
+有两个整数值函数，它们是针对代码中的每条指令在本地（基本块内）计算的，这些函数用于设置程序中指令的优先级。
+
+Let I be an instruction in a block B. The first function D(I), called _delay heuristic_, provides a measure of how many delay slots may occur on a
+path from 1 to the end of B. 
+
+假设 I 是块 B 中的一条指令。第一个函数 D(I) 称为 _延迟启发式_ ，用于衡量从 1 到 B 末尾的路径上可能出现多少个延迟槽。
+
+Initially, D(I) is set to O for every I in B. 
+
+最初，对于 B 中的每个 I，D(I) 都设置为 O。
+
+Assume that J1,J2, ... are the immediate data dependence successors of I in B, and let the delays on those edges be d(IJ1), d(I,J2), .... 
+
+假设 J1、J2、... 是 B 中 I 的直接数据依赖后继，并让这些边上的延迟为 d(IJ1)、d(I、J2)、...。
+
+Then, by visiting I after visiting its data dependence successors, D(I) is computed as follows:
+
+然后，通过在访问其数据依赖后继之后访问 I，D(I) 计算如下：
+
+D(l) = max((D(J1) + d(I,J1)),(D(J2 + d(I,J2), ... )
+
+The second function CP(I), called _critical path heuristic_, provides a measure of how long it will take to complete the execution of instructions that
+depend on I in B, including I itself, and assuming an unbounded number of computational units. 
+
+第二个函数 CP(I) 称为 _关键路径启发式_ ，它衡量了 B 中依赖于 I 的指令（包括 I 本身）需要多长时间才能完成执行，并假设计算单元数量无限。
+
+Let E(I) be the execution time of I.
+
+E(I) 为 I 的执行时间。
+
+First, CP(I) is initialized to E(I) for every I in B. 
+
+首先，对于 B 中的每个 I，将 CP(I) 初始化为 E(I)。
+
+Then, again by visiting I after visiting its data dependence successors, CP(I) is computed as follows:
+
+然后，在访问其数据依赖后继之后再次访问 I，CP(I) 计算如下：
+
+CP(I) = max((CP(J1) + d(I,J1)), (CP(J2) + d(I,J2)), ...) + E(I)
+
+During the decision process, we schedule useful instructions before speculative ones. For the same class of instructions (useful or speculative) we pick
+an instruction with has the biggest delay heuristic (D). 
+
+在决策过程中，我们先安排有用指令，然后再安排推测指令。对于同一类指令（有用或推测），我们选择具有最大延迟启发式（D）的指令。
+
+For the instructions of the same class and delay we pick one that has a biggest critical path heuristic (CP). 
+
+对于相同类型和延迟的指令，我们选择具有最大关键路径启发式（CP）的指令。
+
+Finally, we try to preserve the original order of instructions.
+
+最后，我们尝试保留指令的原始顺序。
+
+To make it formally, let A be a block that is currently scheduled, and let I and J be two instructions that (should be executed by a functional unit of the same type and) are ready at the same time in the scheduling process, and one of them has to be scheduled next. 
+
+为了正式化，A 为当前调度的块，让 I 和 J 成为在调度过程中同时准备就绪的两个指令（应由相同类型的功能单元执行），其中一个必须接下来调度。
+
+Also, let U(A) = A ∪ EQUIV(A), and let B(I) and B(J) be the basic blocks to which I and J belong. 
+
+此外，让 U(A) = A ∪ EQUIV(A)，让 B(I) 和 B(J) 成为 I 和 J 所属的基本块。
+
+The the decision is made in the following order:
+
+决策按以下顺序进行：
+
+1. If B(l) ∈ U(A) and B(J) ∉ U(A), then pick ~
+2. If B(J) ∈ U(A) and B(I) ∉ U(A), then pick J
+3. If D(I)> D(J), then pick I
+4, If D(J)> D(I), then pick J
+5. If CP(I) > CP(J), then pick I
+6. If CP(J) > CP(I), then pick J
+7. Pick an instruction that occurred in the code first
+
+Notice that the current ordering of the heuristic functions is tuned towards a machine with a small number of resources. 
+
+请注意，启发式函数的当前排序针对资源较少的机器进行了调整。
+
+This is the reason for always preferring to schedule a useful instmction before a speculative one, even though a speculative instruction may cause longer delay. 
+
+这就是始终优先在推测性指令之前安排有用指令的原因，即使推测性指令可能会导致更长的延迟。
+
+In any case, experimentation and tuning are needed for better results.
+
+无论如何，需要进行实验和调整才能获得更好的结果。
+
