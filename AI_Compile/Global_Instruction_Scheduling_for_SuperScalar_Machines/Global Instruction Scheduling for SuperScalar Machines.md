@@ -545,7 +545,7 @@ As was mentioned in the introduction, currently we schedule instructions within 
 
 So, for the purposes of this type of instruction scheduling, we follow [CHH89] and build the forwa-d control dependence graph only, i.e. we do not compute the control dependence that result from or propagate through the back edges in the control flow graph. 
 
-因此，出于这种类型的指令调度的目的，我们遵循 [CHH89] 并仅构建前向控制依赖图，即，我们不计算由控制流图中的后向边缘引起或传播的控制依赖性。
+因此，出于这种类型的指令调度的目的，我们遵循 [CHH89] 并仅构建前向控制依赖图，即，我们不计算由控制流图中的 back edges 引起或传播的控制依赖性。
 
 The CSPDG of Figure 4 is a forward control dependence graph. In the following we discuss forward control dependence graphs only. Notice that forward control dependence graphs are acyclic
 
@@ -723,3 +723,140 @@ Finally, both of ((I1),(I4)) and ((I2),(I4)) are transitive edges.
 It is important to notice that, since both the control and data dependence we compute are acyclic, the resultant PDG is acyclic as well. This facilitates convenient scheduling of instructions which is discussed next.
 
 需要注意的是，由于我们计算的控制和数据依赖性都是非循环的，因此得到的 PDG 也是非循环的。这有助于方便地安排接下来要讨论的指令。
+
+## 5. The scheduling framework
+
+The global scheduling framework consists of the top-level process, which tries to schedule instructions cycle by cycle, and of a set of heuristics which decide what instruction will be scheduled next, in case there is a choice. 
+
+全局调度框架由顶层进程和一组启发式算法组成，顶层进程尝试逐个周期地调度指令，启发式算法决定在有选择的情况下接下来将调度什么指令。
+
+While the top-level process is suitable for a range of machines dicussed here, it is suggested that the set of heuristics and their relative ordering should be tuned for a specfic machine at hand. We present the top-level process in Section 5.1, while the heuristics are discussed in Section 5.2.
+
+虽然顶层进程适用于此处讨论的一系列机器，但建议对启发式算法集及其相对顺序进行调整，以适应手头的特定机器。我们在第 5.1 节中介绍顶层进程，而在第 5.2 节中讨论启发式算法。
+
+### 5.1 The top-level process
+
+We schedule instructions in the program on a region by region basis. 
+
+我们按区域逐个安排程序中的指令。
+
+In our terminology a region represents either a strongly connected component that corresponds to a loop (which has at least one back edge) or a body of a subroutine without the enclosed loops (which has no back edges at all).
+
+在我们的术语中，区域表示与循环相对应的强连通组件（至少有一个back edge）或没有封闭循环的子程序主体（根本没有back edges）。
+
+Since currently we do not overlap the execution of different iterations of a loop, there is no difference in the process of scheduling the body of a loop and the body of a subroutine.
+
+由于目前我们没有重叠执行循环的不同迭代，因此在安排循环主体和子程序主体的过程中没有区别。
+
+Innermost regions are scheduled first. There are a few principles that govern our scheduling process:
+
+首先调度最内层的区域。我们的调度过程遵循以下几个原则：
+
+- Instructions are never moved out or into a region.
+- 指令永远不会移出或移入区域。
+- All the instructions are moved in the upward duection, i.e, they are moved against the direction of the control flow edges.
+- 所有指令都以向上方向移动，即，它们沿控制流边缘的方向移动。
+- The original order of branches in the program is preserved.
+- 程序中分支的原始顺序得以保留。
+
+Also, there are several limitations that characterize the current status of our implementation for global scheduling. This includes:
+此外，我们目前实施的全局调度还存在一些局限性。其中包括：
+
+- NO duplication of code is allowed (see Deftition 6 in Section 4.1).
+- 不允许重复代码（参见第 4.1 节中的定义 6）。
+- Only 1-branch speculative instructions are supported (see Deftition 7 in Section 4.1).
+- 仅支持 1 分支推测指令（参见第 4.1 节中的定义 7）。
+- No new basic blocks are created in the control flow graph during the scheduling process.
+- 在调度过程中，控制流图中不会创建新的基本块。
+
+These limitations will be removed in future work.
+
+We schedule instructions in a region by processing its basic blocks one at a time. The basic blocks are visited in the topological order, i.e., if there is a path in the control flow graph from A to B, A is processed before B.
+
+我们通过一次处理一个基本块来调度区域中的指令。基本块按拓扑顺序访问，即，如果控制流图中存在从 A 到 B 的路径，则先处理 A，再处理 B。
+
+Let A be the basic block to be scheduled next, and let _EQUIV(A)_ be the set of blocks that are equivalent to A and are dominated by A (see Deftition 3). 
+
+让 A 成为下一个要调度的基本块，让 _EQUIV(A)_ 成为与 A 等同且由 A 主导的块集（参见定义 3）。
+
+We maintain a set _C(A)_ of _candidate blocks for A_, i.e., a set of basic blocks which can contribute instructions to A. 
+
+我们为 A_ 维护一个 _候选块集 _C(A)_，即可以为 A 贡献指令的基本块集。
+
+Currently there are two levels of scheduling:
+目前有两种调度级别：
+
+1. Useful instructions only: _C(A)= EQUIV(A)_;
+1. 仅有用的指令：_C(A)= EQUIV(A)_;
+2. 1-branch speculative: _C(A)_ includes the following blocks:
+2. 1-分支推测：_C(A)_ 包含以下块：
+   a. the blocks of EQUIV(A);
+   a. EQUIV(A) 的块；
+   b. All the immediate successors of A in CSPDG;
+   b. CSPDG 中 A 的所有直接后继；
+   c. All the immediate successors of blocks in _EQUIV(A)_ in CSPDG.
+   c. CSPDG 中 _EQUIV(A)_ 中块的所有直接后继。
+
+Once we initialize the set of candidate blocks, we compute the set of candidate instructions for A. 
+
+一旦我们初始化候选块集，我们就会计算 A 的候选指令集。
+
+An instruction I is a candidate for scheduling in block A if it belongs to one of the following categories:
+
+如果指令 I 属于以下类别之一，则它是块 A 中调度的候选指令：
+
+- I belonged to A in the first place.
+- I 首先属于 A。
+- I belongs to one of the blocks in _C(A)_ and:
+- I 属于 _C(A)_ 中的一个块，并且：
+    - 1. I belongs to one of the blocks in _EQUIV(A)_ and it may be moved beyond its basic block boundaries. (There are instructions that are never moved beyond basic block boundaries, like calls to subroutines.)
+    - 1. I 属于 _EQUIV(A)_ 中的一个块，并且它可能被移出其基本块边界。（有些指令永远不会移出基本块边界，例如对子例程的调用。）
+    - 2. I does not belong to one of the blocks in _EQUIV(A)_ and it is allowed to schedule it speculatively. (There are instructions that are never scheduled speculatively, like store to memory instructions.)
+    - 2. I 不属于 _EQUIV(A)_ 中的一个块，并且允许对其进行推测性调度。（有些指令永远不会被推测性调度，例如存储到内存的指令。） 
+
+During the scheduling process we maintain a list of ready instructions, i.e., candidate instructions whose data dependence are fulfilled. 
+
+在调度过程中，我们维护一个就绪指令列表，即满足数据依赖性的候选指令。
+
+Every cycle we pick from the ready list as many instructions to be scheduled next as required by the machine architecture, by consulting the parametric machine
+description. 
+
+每个周期，我们都会通过查阅参数机器描述，从就绪列表中挑选出尽可能多的指令，以满足机器架构的下一步调度要求。
+
+If there are too many ready instructions, we choose the %est” ones based on priority criteria. 
+
+如果就绪指令过多，我们会根据优先级标准选择“最佳”指令。
+
+Once an instruction is picked up to be scheduled, it is moved to the proper place in the code, and its data dependence to the following instructions are marked as fulfilled, potentiality enabling new instructions to become ready. 
+
+一旦挑选出一条指令进行调度，它就会被移动到代码中的适当位置，并且其对后续指令的数据依赖性被标记为已完成，从而有可能使新指令就绪。
+
+Once all the instructions of A are scheduled, we move to the next basic block. 
+
+一旦 A 的所有指令都调度完毕，我们就会转到下一个基本块。
+
+The net result is that the instructions in A are reordered and there might be instructions eexternal to A that are physically moved into A.
+
+最终结果是 A 中的指令被重新排序，并且可能存在 A 之外的指令，这些指令会物理移动到 A 中。
+
+It turns out that the global scheduler does not always create the best schedule for each individual basic block. 
+
+事实证明，全局调度程序并不总是为每个单独的基本块创建最佳调度。
+
+It is mainly due to the two following reasons:
+
+这主要是由于以下两个原因：
+
+- The parametric machine description of Section 2 does not cover all the secondary features of
+the machine;
+- 第 2 节的参数机器描述没有涵盖机器的所有次要特征；
+- The global decisions are not necessarily optimal in a local context.
+- 全局决策在本地环境中不一定是最佳的。
+
+To solve this problem, the basic block scheduler is applied to every single basic block of a program after the global scheduling is completed. 
+
+为了解决这个问题，在全局调度完成后，将基本块调度程序应用于程序的每个单个基本块。
+
+The basic block scheduler has a more detailed model of the machine which allows more precise decisions for reordering the instructions within the basic blocks
+
+基本块调度程序具有更详细的机器模型，可以更精确地决定对基本块内的指令进行重新排序
