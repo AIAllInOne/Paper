@@ -954,3 +954,54 @@ In any case, experimentation and tuning are needed for better results.
 
 无论如何，需要进行实验和调整才能获得更好的结果。
 
+### 5.3 Speculative scheduling
+
+In the global scheduling framework, while doing non-speculative scheduling, to preserve the correctness of the program it is sufficient to respect the data dependence as they were defined in Section 4.2. 
+
+在全局调度框架中，在进行非推测性调度时，为了保持程序的正确性，只需遵守第 4.2 节中定义的数据依赖性即可。
+
+It turns out that for speculative scheduling this is not true, and a new type of information has to be maintained. 
+
+事实证明，对于推测性调度而言，情况并非如此，必须维护一种新类型的信息。
+
+Examine the following excerpt of a C program:
+
+检查以下 C 程序摘录：
+
+```
+if (cond) x = 5;
+else x = 3;
+printf("x=%d", x)
+```
+
+The control flow graph of this piece of code looks as follows:
+
+![image](https://github.com/user-attachments/assets/20e0d37d-289e-4d95-a28e-34f4aa7d16c6)
+
+Instruction x=5 belongs to B2, while x=3 belongs to B3. 
+
+指令 x=5 属于 B2，而 x=3 属于 B3。
+
+Each of them can be (speculatively) moved into B 1, but it is apparent that both of them are not allowed to move there, since a wrong value may be printed in B4. Data dependence do not prevent the movement of these instructions into B1.
+
+它们中的每一个都可以（推测性地）移动到 B 1，但显然它们都不允许移动到那里，因为 B4 中可能会打印错误的值。数据依赖性不会阻止这些指令移动到 B1。
+
+To solve this problem, we maintain the information about the (symbolic) registers that are _live on exit_ from a basic block. 
+
+为了解决这个问题，我们维护有关从基本块退出时处于活动(live on exit)状态的（符号）寄存器的信息。
+
+If an instruction that is being considered to be moved speculatively to a block B computes a new value for a register that is live on exit from B, such speculative movement is disallowed.
+
+如果正在考虑推测性移动到块 B 的指令为从 B 退出时处于活动状态的寄存器计算新值，则不允许进行这种推测性移动。
+
+Notice that this type of information has to be updated dynamically, i.e., after each speculative motion this information has to be updated. Thus, let us say, x=5 is first moved to B1.
+
+请注意，这种类型的信息必须动态更新，即，每次推测性移动之后都必须更新此信息。因此，假设 x=5 首先移动到 B1。
+
+Then, x (or actually a symbolic register that correspondsto x) becomes live on exit from B1, and the movement of x=3 to B1 will be prevented.
+
+然后，x（或实际上与 x 对应的符号寄存器）在退出 B1 时变为活动状态，并且将阻止 x=3 移动到 B1。
+
+More detailed description ofthe speculative scheduling and its relationship to the PDG-based global scheduling is out of the scope of this paper.
+
+有关推测调度及其与基于 PDG 的全局调度的关系的更详细描述超出了本文的范围。
