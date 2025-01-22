@@ -579,9 +579,9 @@ Definition 3. A and B are equivalent if and only if A dominates B and B postdorn
 
 Definition 3. 当且仅当 A 支配 B 且 B 后支配 A 时，A 和 B 等价。
 
-Definition 4. We say that moving an instruction from B to A is useful if and only if.4 and B are equivalent.
+Definition 4. We say that moving an instruction from B to A is useful if and only if.A and B are equivalent.
 
-Definition 4. 当且仅当 4 和 B 等价时，我们说将指令从 B 移动到 A 是有用的。
+Definition 4. 当且仅当 A 和 B 等价时，我们说将指令从 B 移动到 A 是有用的。
 
 Definition 5. We say that moving an instruction from B to A is speculative if B does not postdorninate A.
 
