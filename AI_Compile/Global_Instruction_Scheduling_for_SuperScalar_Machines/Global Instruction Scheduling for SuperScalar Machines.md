@@ -525,7 +525,7 @@ The meaning of an edge from a node A to a node B in a control flow graph is that
 
 The control subgraph of the PDG (CSPDG) of the loop of Figure 2 is shown in Figure 4. As in Figure 3, each node of the graph corresponds to a basic block of the program. Here, a solid edge from a node A to a node B has the following meaning:
 
-图 4 显示了图 2 循环的 PDG（CSPDG）的控制子图。与图 3 一样，图中的每个节点对应于程序的一个基本块。这里，从节点 A 到节点 B 的实线边具有以下含义：
+图 4 显示了图 2 循环的 PDG的控制子图（CSPDG）。与图 3 一样，图中的每个节点对应于程序的一个基本块。这里，从节点 A 到节点 B 的实线边具有以下含义：
 
 ![image](https://github.com/user-attachments/assets/2bad3765-33a4-4086-a6e9-83faaff6e627)
 
@@ -890,7 +890,16 @@ Then, by visiting I after visiting its data dependence successors, D(I) is compu
 
 然后，通过在访问其数据依赖后继之后访问 I，D(I) 计算如下：
 
-D(l) = max((D(J1) + d(I,J1)),(D(J2 + d(I,J2), ... )
+D(I) = max((D(J1) + d(I,J1)),(D(J2 + d(I,J2), ... )
+
+> (I1) L r12=a(r31,4) load u
+> (I2) C cr7=r12, 0 U>v
+> (I3) BF xx cr7, 0x2/gt
+>
+> D(3) = 0
+> D(2) = Max(D(3) + d(2,3)) = 0 + 3 = 3
+> D(1) = Max(D(2) + d(1,2)) = 3 + 1 = 4
+> I1, [], I2, [], [], [], I3
 
 The second function CP(I), called _critical path heuristic_, provides a measure of how long it will take to complete the execution of instructions that
 depend on I in B, including I itself, and assuming an unbounded number of computational units. 
@@ -905,16 +914,23 @@ First, CP(I) is initialized to E(I) for every I in B.
 
 首先，对于 B 中的每个 I，将 CP(I) 初始化为 E(I)。
 
+> E(1) = 1, E(2) = 1, E(3) = 1
+> CP(1) = 1, CP(2) = 1, CP(3) = 1
+
 Then, again by visiting I after visiting its data dependence successors, CP(I) is computed as follows:
 
 然后，在访问其数据依赖后继之后再次访问 I，CP(I) 计算如下：
 
 CP(I) = max((CP(J1) + d(I,J1)), (CP(J2) + d(I,J2)), ...) + E(I)
 
+> CP(3) = Max() + E(3) = 1
+> CP(2) = Max(CP(3) + d(2,3)) + E(2) = (1 + 3) + 1 = 5
+> CP(1) = Max(CP(2) + d(1,2)) + E(1) = (5 + 1) + 1 = 7
+
 During the decision process, we schedule useful instructions before speculative ones. For the same class of instructions (useful or speculative) we pick
 an instruction with has the biggest delay heuristic (D). 
 
-在决策过程中，我们先安排有用指令，然后再安排推测指令。对于同一类指令（有用或推测），我们选择具有最大延迟启发式（D）的指令。
+在决策过程中，我们先调度有用指令，然后再调度推测指令。对于同一类指令（有用或推测），我们选择具有最大延迟启发式（D）的指令。
 
 For the instructions of the same class and delay we pick one that has a biggest critical path heuristic (CP). 
 
@@ -936,7 +952,7 @@ The the decision is made in the following order:
 
 决策按以下顺序进行：
 
-1. If B(l) ∈ U(A) and B(J) ∉ U(A), then pick ~
+1. If B(I) ∈ U(A) and B(J) ∉ U(A), then pick I
 2. If B(J) ∈ U(A) and B(I) ∉ U(A), then pick J
 3. If D(I)> D(J), then pick I
 4, If D(J)> D(I), then pick J
