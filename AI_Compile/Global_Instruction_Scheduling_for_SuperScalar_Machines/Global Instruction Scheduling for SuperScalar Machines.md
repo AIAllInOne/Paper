@@ -744,7 +744,7 @@ We schedule instructions in the program on a region by region basis.
 
 In our terminology a region represents either a strongly connected component that corresponds to a loop (which has at least one back edge) or a body of a subroutine without the enclosed loops (which has no back edges at all).
 
-在我们的术语中，区域表示与循环相对应的强连通组件（至少有一个back edge）或没有封闭循环的子程序主体（根本没有back edges）。
+在我们的术语中，区域表示与循环相对应的[强连通](https://zh.wikipedia.org/wiki/%E5%BC%BA%E8%BF%9E%E9%80%9A%E5%88%86%E9%87%8F)组件（至少有一个back edge）或没有封闭循环的子程序主体（根本没有back edges）。
 
 Since currently we do not overlap the execution of different iterations of a loop, there is no difference in the process of scheduling the body of a loop and the body of a subroutine.
 
