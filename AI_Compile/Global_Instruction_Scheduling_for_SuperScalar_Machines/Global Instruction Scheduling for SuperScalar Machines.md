@@ -18,7 +18,7 @@ As internal parallelism and pipelining increases,<font style="color:#DF2A3F;"> i
 
 A scheme for global (intra-loop) scheduling is proposed, which uses the control and data dependence information summarized in a Program Dependence Graph, to <font style="color:#DF2A3F;">move instructions well beyond basic block boundaries</font>. 
 
-本文提出了一种全局(intra-loop)调度方案，该方案使用程序依赖图中提供的控制和数据依赖信息，<font style="color:#DF2A3F;">将指令移动到基本块边界之外 ？</font>
+本文提出了一种（循环内）全局调度方案，该方案使用程序依赖图中提供的控制和数据依赖信息，<font style="color:#DF2A3F;">将指令移动到基本块边界之外 ？</font>
 
 
 
