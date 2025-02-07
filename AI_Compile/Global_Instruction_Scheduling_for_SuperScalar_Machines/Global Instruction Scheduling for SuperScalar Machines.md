@@ -462,11 +462,11 @@ Also, there is a three cycle delay between each compare instruction and the corr
 
 此外，每个比较指令和相应的分支指令之间有三个周期的延迟。
 
-Taking into consideration that the fixed point unit and the branch unit run in parallel, we estimate that the code executes in 20, 21 or 22 cycles, depending on if 0, 1 or 2 updates of max and mi n variables (LR instructions) are done, respectively.
 
+Taking into consideration that the fixed point unit and the branch unit run in parallel, we estimate that the code executes in 20, 21 or 22 cycles, depending on if 0, 1 or 2 updates of max and mi n variables (LR instructions) are done, respectively.
 考虑到定点单元和分支单元并行运行，我们估计代码执行需要 20、21 或 22 个周期，具体取决于是否分别完成 max 和 min 变量（LR 指令）的 0、1 或 2 次更新。
 
-> I1, I2, I3, [], [], [], [I4, I12], [], [], [], [I13, I15], [], [], [], [I16, I18], I19, [], [], [], I20 -> 20 cycles
+> I1, I2, [], I3, [], [], [], [I4, I12], [], [], [], [I13, I15], [], [], [], [I16, I18], I19, [], [], [],  -> 20 cycles (I20 合并到下次I1？)
 
 ## 4. The Program Dependence Graph
 
