@@ -119,10 +119,10 @@ Gcd = CD_alg(Ecf , PDcf)
 Definition 3 The forward con,trol depen,dence subgraph is Gfcd = (N, Efed) where Efcd ⊆ Ecd is computed as
 follows:
 1. Compute PDcf : the post-dominators of GcJ.
-2. Construct Gfcf = (N, Efcf), where Efcf = EcJ - {(X,Y) | Y dominates X in Gcf}
+2. Construct Gfcf = (N, Efcf), where Efcf = Ecf - {(X,Y) | Y dominates X in Gcf}
 Thus, Efcf contains all edges of Ecf except the back edges.
 3. Compute Gfcd = CD_alg(Efcf , PDcf). The edges Efcd are thus determined by the control dependence algorithm [CF87a], using the control flow
-edges Efcf and the post-dominator relation PDcj. 
+edges Efcf and the post-dominator relation PDcf. 
 
 
 定义 3 前向控制依赖子图为 Gfcd = (N, Efed)，其中 Efcd ⊆ Ecd 计算如下：
@@ -130,7 +130,7 @@ edges Efcf and the post-dominator relation PDcj.
 1. 计算 PDcf：Gcf 的后支配者。
 2. 构造 Gfcf = (N, Efcf)，其中 Efcf = Ecf - {(X,Y) | Y 在 Gcf 中支配 X}
 因此，Efcf 包含 Ecf 的所有边，后边除外。
-3. 计算 Gfcd = CD_alg(Efcf , PDcf)。因此，边 Efcd 由控制依赖算法 [CF87a] 确定，使用控制流边 Efcf 和后支配者关系 PDcj。
+3. 计算 Gfcd = CD_alg(Efcf , PDcf)。因此，边 Efcd 由控制依赖算法 [CF87a] 确定，使用控制流边 Efcf 和后支配者关系 PDcf。
 
 
 Where unambiguous, we drop the subscripts of Gfcd in favor of G = (N, E) for the forward control dependence graph. 
