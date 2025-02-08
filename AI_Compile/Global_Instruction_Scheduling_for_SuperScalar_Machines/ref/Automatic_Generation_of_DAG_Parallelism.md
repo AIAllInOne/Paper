@@ -128,7 +128,7 @@ edges Efcf and the post-dominator relation PDcj.
 定义 3 前向控制依赖子图为 Gfcd = (N, Efed)，其中 Efcd ⊆ Ecd 计算如下：
 
 1. 计算 PDcf：Gcf 的后支配者。
-2. 构造 Gfcf = (N, Efcf)，其中 Efcf = EcJ - {(X,Y) | Y 在 Gcf 中支配 X}
+2. 构造 Gfcf = (N, Efcf)，其中 Efcf = Ecf - {(X,Y) | Y 在 Gcf 中支配 X}
 因此，Efcf 包含 Ecf 的所有边，后边除外。
 3. 计算 Gfcd = CD_alg(Efcf , PDcf)。因此，边 Efcd 由控制依赖算法 [CF87a] 确定，使用控制流边 Efcf 和后支配者关系 PDcj。
 
@@ -137,9 +137,9 @@ Where unambiguous, we drop the subscripts of Gfcd in favor of G = (N, E) for the
 
 在明确的情况下，我们删除 Gfcd 的下标，转而使用 G = (N, E) 作为前向控制依赖图。
 
-Theorem 1 Gfcd is a tree if Gcj is a structured control flow graph. 
+Theorem 1 Gfcd is a tree if Gcf is a structured control flow graph. 
 
-定理 1 如果 Gcj 是结构化控制流图，则 Gfcd 是一棵树。
+定理 1 如果 Gcf 是结构化控制流图，则 Gfcd 是一棵树。
 
 Theorem 2 Gfcd is acyclic if Gcf is reducible
 
