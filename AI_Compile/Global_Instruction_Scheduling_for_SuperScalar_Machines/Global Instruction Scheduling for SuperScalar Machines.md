@@ -757,7 +757,7 @@ Innermost regions are scheduled first. There are a few principles that govern ou
 - Instructions are never moved out or into a region.
 - 指令永远不会移出或移入区域。
 - All the instructions are moved in the upward duection, i.e, they are moved against the direction of the control flow edges.
-- 所有指令都以向上方向移动，即，它们沿控制流边缘的方向移动。
+- 所有指令都以向上方向移动，即，它们沿控制流边缘的反方向移动。
 - The original order of branches in the program is preserved.
 - 程序中分支的原始顺序得以保留。
 
@@ -783,6 +783,8 @@ Let A be the basic block to be scheduled next, and let _EQUIV(A)_ be the set of 
 
 We maintain a set _C(A)_ of _candidate blocks for A_, i.e., a set of basic blocks which can contribute instructions to A. 
 
+> EQUIV(1) = 10 EQUIV(2) = 4 EQUIV(6) = 8
+
 我们为 A_ 维护一个 _候选块集 _C(A)_，即可以为 A 贡献指令的基本块集。
 
 Currently there are two levels of scheduling:
@@ -798,6 +800,14 @@ Currently there are two levels of scheduling:
    b. CSPDG 中 A 的所有直接后继；
    c. All the immediate successors of blocks in _EQUIV(A)_ in CSPDG.
    c. CSPDG 中 _EQUIV(A)_ 中块的所有直接后继。
+
+
+> useful -> C(1) = 10 C(2) = 4 C(6) = 8
+> 1-branch => C(1) = 10, 2, 6
+> C(2) = 4, 3, 5, 10
+> C(3) = 4, 5, 10
+> C(4) = 5, 10
+> C(5) = 10
 
 Once we initialize the set of candidate blocks, we compute the set of candidate instructions for A. 
 
@@ -816,16 +826,17 @@ An instruction I is a candidate for scheduling in block A if it belongs to one o
     - 2. I does not belong to one of the blocks in _EQUIV(A)_ and it is allowed to schedule it speculatively. (There are instructions that are never scheduled speculatively, like store to memory instructions.)
     - 2. I 不属于 _EQUIV(A)_ 中的一个块，并且允许对其进行推测性调度。（有些指令永远不会被推测性调度，例如存储到内存的指令。） 
 
+
+
 During the scheduling process we maintain a list of ready instructions, i.e., candidate instructions whose data dependence are fulfilled. 
 
 在调度过程中，我们维护一个就绪指令列表，即满足数据依赖性的候选指令。
 
-Every cycle we pick from the ready list as many instructions to be scheduled next as required by the machine architecture, by consulting the parametric machine
-description. 
+Every cycle we pick from the ready list as many instructions to be scheduled next as required by the machine architecture, by consulting the parametric machine description. 
 
 每个周期，我们都会通过查阅参数机器描述，从就绪列表中挑选出尽可能多的指令，以满足机器架构的下一步调度要求。
 
-If there are too many ready instructions, we choose the %est” ones based on priority criteria. 
+If there are too many ready instructions, we choose the best ones based on priority criteria. 
 
 如果就绪指令过多，我们会根据优先级标准选择“最佳”指令。
 
@@ -893,13 +904,22 @@ Then, by visiting I after visiting its data dependence successors, D(I) is compu
 D(I) = max((D(J1) + d(I,J1)),(D(J2 + d(I,J2), ... )
 
 > (I1) L r12=a(r31,4) load u
+> 
 > (I2) C cr7=r12, 0 U>v
+> 
 > (I3) BF xx cr7, 0x2/gt
+> 
+> (I4) BF CL.4, cr7,0x2/gt
 >
-> D(3) = 0
-> D(2) = Max(D(3) + d(2,3)) = 0 + 3 = 3
-> D(1) = Max(D(2) + d(1,2)) = 3 + 1 = 4
-> I1, [], I2, [], [], [], I3
+> D(4) = 0
+> 
+> D(3) = Max(D4 + d(3,4)) = Max(0+3) = 3
+> 
+> D(2) = Max(D(3) + d(2,3)) = 3 + 1 = 4
+> 
+> D(1) = Max(D(2) + d(1,2)) = 4 + 0 = 4
+> 
+> I1, I2, [], I3, [], [], [], I4
 
 The second function CP(I), called _critical path heuristic_, provides a measure of how long it will take to complete the execution of instructions that
 depend on I in B, including I itself, and assuming an unbounded number of computational units. 
@@ -915,6 +935,7 @@ First, CP(I) is initialized to E(I) for every I in B.
 首先，对于 B 中的每个 I，将 CP(I) 初始化为 E(I)。
 
 > E(1) = 1, E(2) = 1, E(3) = 1
+> 
 > CP(1) = 1, CP(2) = 1, CP(3) = 1
 
 Then, again by visiting I after visiting its data dependence successors, CP(I) is computed as follows:
@@ -923,9 +944,15 @@ Then, again by visiting I after visiting its data dependence successors, CP(I) i
 
 CP(I) = max((CP(J1) + d(I,J1)), (CP(J2) + d(I,J2)), ...) + E(I)
 
-> CP(3) = Max() + E(3) = 1
-> CP(2) = Max(CP(3) + d(2,3)) + E(2) = (1 + 3) + 1 = 5
-> CP(1) = Max(CP(2) + d(1,2)) + E(1) = (5 + 1) + 1 = 7
+> CP4 = max() + E4 = 1
+>
+> CP3 = max(CP4 + d(3,4)) + E3 = (1 + 3) + 1= 5
+>
+> CP2 = max(CP3 + d(2,3)) = (5 + 1) + 1 = 7
+>
+> CP1 = max(CP2 + d(1,2)) = (7 + 0) + 1 = 8
+>
+> > I1, I2, [], I3, [], [], [], I4
 
 During the decision process, we schedule useful instructions before speculative ones. For the same class of instructions (useful or speculative) we pick
 an instruction with has the biggest delay heuristic (D). 
@@ -1084,6 +1111,9 @@ The resultant program in Figure5 takes 12-13 cycles per iteration, while the ori
 
 图 5 中的结果程序每次迭代需要 12-13 个周期，而图 2 中的原始程序每次迭代需要 20-22 个周期。
 
+
+> I1, I2, I18, I3, I19, I5, I12, [I4, I15], [](I13 依赖的cr6 定义在 I5， 3个 delay), [](12-13 delay), I13, I16, I20  -> 12 cycles（不算20）
+
 Figure 6. The result of applying the useful and speculative scheduling to the program of Figure 2
 
 ```
@@ -1136,5 +1166,4 @@ All in all, the program in Figure 6 takes 11-12 cycles per iteration, a one cycl
 
 总而言之，图 6 中的程序每次迭代需要 11-12 个周期，比图 5 中的程序改进了一个周期。
 
-> I1, I2, I18, I3, I19, I5, I12, [I4, I15], [](I13 依赖的cr6 定义在 I5， 3个 delay), I13, I16, I20  -> 12 cycles
-> I1, I2, I18, I3, I19, I5, I12, [I4, I8], I6, I9, I20  -> 11 cycles
+> I1, I2, I18, I3, I19, I5, I12, [I4, I8], I6, [], [] I9, I20  -> 11 cycles （不算20）
