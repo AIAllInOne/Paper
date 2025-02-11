@@ -295,7 +295,7 @@ Goal 1: We need a flexible and precise workload generator that can handle variou
 
 **High-fidelity communication simulation.** Classical network simulators, such as NS-3 [47] and OMNET++ [55], offer packet-level network behavior simulations but don’t address the collective communication used in distributed LLM training. To maximize performance, collective communication libraries (e.g., NCCL) apply various optimizations that affect traffic patterns. Simulating these from scratch can lead to low fidelity.
 
-*8高保真度的通信模拟。**经典的网络模拟器，如NS-3 [47]和OMNET++ [55]，提供了基于数据包的网络行为模拟，但并未涉及分布式LLM训练中使用的集体通信。为了最大化性能，集体通信库（例如NCCL）应用各种影响流量模式的优化。从零开始模拟这些可能导致保真度较低。
+**高保真度的通信模拟。**经典的网络模拟器，如NS-3 [47]和OMNET++ [55]，提供了基于数据包的网络行为模拟，但并未涉及分布式LLM训练中使用的集体通信。为了最大化性能，集体通信库（例如NCCL）应用各种影响流量模式的优化。从零开始模拟这些可能导致保真度较低。
 
 Goal 2: We need a high-precision collective communication simulator that incorporates key optimizations and enhancements.
 目标2：我们需要一个高精度的集体通信模拟器，融入关键优化和增强。
