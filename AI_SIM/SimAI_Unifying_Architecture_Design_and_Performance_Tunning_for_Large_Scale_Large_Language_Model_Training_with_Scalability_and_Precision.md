@@ -166,21 +166,27 @@ Additionally, we share lessons learned in transforming SimAI from a standalone s
 此外，我们分享了将SimAI从独立模拟器转变为广泛使用的模拟服务所学到的经验教训（§6）。
 
 SimAI is a high-precision, full-stack simulator designed to benefit researchers across various domains involved in Large Language Model (LLM) training.
+
 SimAI是一个高精度的全栈模拟器，旨在惠及参与大型语言模型（LLM）训练的各个领域的研究人员。
 
 This versatile tool caters to multiple levels of the LLM training ecosystem.
+
 这个多功能工具适用于LLM培训生态系统的多个层面。
 
 At the framework level, SimAI enables the exploration of optimal parallel strategies and communication-computation overlap techniques, facilitating parameter tuning to reduce end-to-end training time.
+
 在框架层面上，SimAI使得能够探索最佳的并行策略和通信计算重叠技术，从而促进参数调整以减少端到端的训练时间。
 
 For collective communication research, it offers a platform to validate and quantify novel algorithms’ performance gains.
+
 对于集体通信研究，它提供了一个平台来验证和量化新算法的性能增益。
 
 SimAI’s system architecture design allows for experimentation with diverse intra-host and inter-host configurations, helping identify the most cost-effective solutions.
+
 SimAI的系统架构设计允许对多样的主机内和主机间配置进行实验，有助于确定最具成本效益的解决方案。
 
 By providing the flexibility to customize and fine-tune different components, SimAI empowers users to conduct multifaceted research accelerating LLM training processes, and is an invaluable tool for scholars and practitioners throughout the LLM development pipeline.
+
 通过提供定制和微调不同组件的灵活性，SimAI能够赋予用户进行多方面研究以加速LLM训练过程的能力，并成为LLM开发流程中学者和从业者的宝贵工具。
 
 # 2.Background and Motivation
@@ -188,79 +194,102 @@ By providing the flexibility to customize and fine-tune different components, Si
 ## 2.1 AI Training Infrastructure
 
 Large language models (LLMs) require specialized infrastructure, often involving dozens to thousands of GPUs working together to handle pretraining or fine-tuning tasks.
+
 大型语言模型（LLMs）需要专门的基础设施，通常涉及数十到数千个GPU共同合作来处理预训练或微调任务。
 
 For instance, training a GPT-3 model with 175 billion parameters demands 1,024 high-end GPUs running continuously for 34 days [35].
+
 例如，对具有1750亿参数的GPT-3模型进行训练需要连续运行1024台高端GPU达34天[35]。
 
 To optimize GPU usage, mainstream training frameworks like Megatron [52] and DeepSpeed [46] offer parallelization techniques such as Data Parallelism (DP), Pipeline Parallelism (PP), and Tensor Parallelism (TP).
+
 为了优化GPU的使用情况，像Megatron [52]和DeepSpeed [46]这样的主流训练框架提供了数据并行（DP）、管道并行（PP）和张量并行（TP）等并行化技术。
 
 These methods enable the efficient distribution of training tasks across multiple GPUs.
+
 这些方法可以有效地将训练任务分配到多个GPU上。
 
 The process relies on collective communication libraries (CCLs) to manage data exchanges, such as using AllReduce for gradient synchronization or AllGather for parameter sharing.
+
 这一过程依赖于集体通信库（CCLs）来管理数据交换，比如使用AllReduce进行梯度同步或使用AllGather进行参数共享。
 
 The CCL breaks each collective communication task into a series of peer-to-peer Send and Receive operations to carry out the necessary data transfers between GPUs.
+
 CCL将每个集体通信任务分解成一系列点对点的发送和接收操作，以进行GPU之间所需的数据传输。
 
 In Alibaba’s clusters, each server contains multiple GPUs.
+
 在阿里巴巴的集群中，每台服务器都包含多个GPU。
 
 GPUs within the same server are connected through a high-bandwidth intra-host network, such as NVLink or NVLink Switch [40], and each GPU connects to the inter-host RDMA network via network interface cards (NICs).
+
 同一服务器内的GPU通过高带宽的主机内部网络互连，如NVLink或NVLink Switch [40]，每个GPU通过网络接口卡（NIC）连接到主机间的RDMA网络上。
 
 For example, in line with [23], our A100 servers are equipped with eight NVIDIA A100 GPUs [1] and four NVIDIA CX6Dx NICs, each providing 2×100Gbps [6] bandwidth.
+
 例如，参照 [23] 的说法，我们的A100服务器配备了8个NVIDIA A100 GPU [1] 和四个NVIDIA CX6Dx NIC，每个提供2×100Gbps [6] 带宽。
 
 Each GPU is linked to other GPUs in the same server via a 600GB/s NVLink and to GPUs in other servers via a 100Gbps RDMA network.
+
 每个GPU通过600GB/s的NVLink与同一服务器中的其他GPU连接，通过100Gbps的RDMA网络与其他服务器中的GPU连接。
 
 In production, Megatron and DeepSpeed are the two dominant frameworks, NCCL [36] is the dominant CCL.
+
 在生产中，Megatron和DeepSpeed是两个主导框架，NCCL [36] 是主要的CCL。
 
 ## 2.2 Demands for a Unified Simulator
 
 The rapid evolution of LLMs necessitates advancements in AI training infrastructure and optimization methods.
+
 LLMs的快速演进需要推进人工智能训练基础设施和优化方法的进步。
 
 To address these challenges, simulations are crucial for three primary goals:
+
 为了应对这些挑战，模拟对于三个主要目标至关重要：
 
 Comprehensive evaluation of AI infrastructure. To ensure the effective deployment of new hardware and configurations, AI infrastructure must be evaluated from multiple perspectives:
+
 全面评估人工智能基础设施。为了确保新硬件和配置的有效部署，人工智能基础设施必须从多个角度进行评估：
 
 - GPU Selection: Before adopting new GPU models, cloud service providers (CSPs) need to evaluate their performance on AI workloads at scale.
-GPU选择：在采用新的GPU型号之前，云服务提供商（CSPs）需要评估它们在大规模AI工作负载下的性能。
+- GPU选择：在采用新的GPU型号之前，云服务提供商（CSPs）需要评估它们在大规模AI工作负载下的性能。
 - Network Architecture Design: Once specific GPUs and intra-host interconnects are chosen, the next challenge is optimizing network architecture for scalability.
-网络架构设计：一旦选择了特定的GPU和主机内互连，下一个挑战就是优化网络架构以实现可扩展性。
+- 网络架构设计：一旦选择了特定的GPU和主机内互连，下一个挑战就是优化网络架构以实现可扩展性。
 
 Host Architecture Design: Evaluating different host configurations for each type of GPU is essential to determine the optimal number of GPUs per host and the best intra-host interconnect.
+
 主机架构设计：评估每种GPU类型的不同主机配置对于确定每台主机的最佳GPU数量和最佳的主机内互连至关重要。
 
 Cost-effective validation of optimizations.
+
 优化的成本效益验证。
 
 In addition to hardware evaluations, simulations are indispensable for validating new optimization techniques during model development and system upgrades. This involves:
+
 除了硬件评估外，模拟在模型开发和系统升级期间验证新的优化技术是不可或缺的。其中包括：
 
 Parameter Tuning: Testing a variety of model parameters and training framework settings is critical to achieving optimal performance.
+
 参数调整：测试各种模型参数和训练框架设置对于实现最佳性能至关重要。
 
 Evaluating New Mechanisms: As innovative enhancements—such as new training frameworks, collective communication methods, and network congestion control algorithms—are introduced, simulations provide a low-cost method for evaluating their effectiveness in realistic settings.
+
 评估新机制：随着创新增强——例如新的训练框架、集体通信方法和网络拥塞控制算法的引入，模拟提供了一个在真实环境中评估它们有效性的低成本方法。
 
 Development of a unified simulation framework.
+
 统一模拟框架的开发。
 
 Given the diverse needs for simulations across different components and layers of the AI infrastructure, a unified simulation framework is essential.
+
 考虑到跨越人工智能基础设施不同组件和层面的多样化的模拟需求，统一的模拟框架是至关重要的。
 
 Our goal is to develop a unified simulator that addresses all these requirements in a single platform.
+
 我们的目标是开发一个统一的模拟器，在一个平台上满足所有这些需求。
 
 This unified approach will enable consistent, high-precision simulations across different layers of the AI infrastructure, ensuring that teams can validate new designs and optimizations accurately and efficiently.
+
 这个统一的方法将能够在人工智能基础设施的不同层面实现一致的、高精度的模拟，确保团队能够准确高效地验证新的设计和优化。
 
 ## 2.3 Our Goals
