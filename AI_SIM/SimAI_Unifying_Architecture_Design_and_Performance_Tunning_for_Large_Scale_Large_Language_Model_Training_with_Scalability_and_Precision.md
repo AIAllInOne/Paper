@@ -295,14 +295,14 @@ Goal 1: We need a flexible and precise workload generator that can handle variou
 
 **High-fidelity communication simulation.** Classical network simulators, such as NS-3 [47] and OMNET++ [55], offer packet-level network behavior simulations but don’t address the collective communication used in distributed LLM training. To maximize performance, collective communication libraries (e.g., NCCL) apply various optimizations that affect traffic patterns. Simulating these from scratch can lead to low fidelity.
 
-**高保真度的通信模拟。**经典的网络模拟器，如NS-3 [47]和OMNET++ [55]，提供了基于数据包的网络行为模拟，但并未涉及分布式LLM训练中使用的集体通信。为了最大化性能，集体通信库（例如NCCL）应用各种影响流量模式的优化。从零开始模拟这些可能导致保真度较低。
+**高保真度的通信模拟。** 经典的网络模拟器，如NS-3 [47]和OMNET++ [55]，提供了基于数据包的网络行为模拟，但并未涉及分布式LLM训练中使用的集体通信。为了最大化性能，集体通信库（例如NCCL）应用各种影响流量模式的优化。从零开始模拟这些可能导致保真度较低。
 
 Goal 2: We need a high-precision collective communication simulator that incorporates key optimizations and enhancements.
 目标2：我们需要一个高精度的集体通信模拟器，融入关键优化和增强。
 
 **High-fidelity computation simulation.** Current solutions like GPGPU-Sim [2] simulate GPU kernel computations at a detailed level but are too time-consuming for large-scale LLM simulations. Other approaches, such as ASTRA-sim [45], fail to support different GPUs or lack the necessary precision.
 
-**高保真度的计算模拟。**当前的解决方案，如GPGPU-Sim [2]，在细节级别模拟GPU内核计算，但对于大规模LLM模拟来说耗时过长。其他方法，如ASTRA-sim [45]，不支持不同的GPU或缺乏必要的精度。
+**高保真度的计算模拟。** 当前的解决方案，如GPGPU-Sim [2]，在细节级别模拟GPU内核计算，但对于大规模LLM模拟来说耗时过长。其他方法，如ASTRA-sim [45]，不支持不同的GPU或缺乏必要的精度。
 
 Goal 3: We need an efficient computation simulator that delivers both precision and scalability for large-scale simulations.
 目标3：我们需要一个既精确又可扩展的高效计算模拟器，用于大规模模拟。
@@ -312,6 +312,7 @@ Goal 3: We need an efficient computation simulator that delivers both precision 
 快速模拟速度。使用目前的方法的组合（例如，PyTorch跟踪生成器与ASTRA-sim），使用128个GPU模拟GPT-3训练的单次迭代可能需要整整一天，而在真实硬件上完成同样的任务只需两秒钟。效率对于扩展模拟以实际应用至关重要。
 
 Goal 4: The simulator must not only meet Goals 1-3 but also be scalable and capable of running large-scale LLM simulations efficiently.
+
 目标4：模拟器不仅要满足目标1-3，还必须具有可扩展性，并且能够高效地运行大规模LLM模拟。
 
 # 3 The SimAI Simulator
@@ -319,30 +320,39 @@ Goal 4: The simulator must not only meet Goals 1-3 but also be scalable and capa
 ## 3.1 SimAI Overview
 
 Figure 1 illustrates the key components of SimAI. 
+
 图1说明了SimAI的关键组件。
 
 Each simulation request includes detailed information about the training process, such as the model itself and parameters, training framework configurations, CCL parameters, and the intra/inter-host network topology.
+
 每个模拟请求包括关于训练过程的详细信息，如模型本身和参数、训练框架配置、CCL参数以及主机内/主机间网络拓扑结构。
 
 Workload Generator (SimAI-WG) generates realistic workloads for each simulation request (§3.2). 
+
 SimAI的工作负载生成器（SimAI-WG）为每个模拟请求生成真实的工作负载（§3.2）。
 
 The output, called a workload description file, outlines algorithm modules, collective communication operations, and their dependencies. 
+
 输出的工作负载描述文件概述了算法模块、集体通信操作及其依赖关系。
 
 The workload file is then processed by the Execution Engine, which simulates the execution of both computation and communication operations as discrete events. 
+
 然后工作负载文件由执行引擎处理，该引擎将计算和通信操作的执行模拟为离散事件。
 
 We utilize the Computation Simulator (SimAI-CP) and the Communication Simulator (SimAI-CM) to simulate computation and communication tasks, respectively. 
+
 我们利用计算模拟器（SimAI-CP）和通信模拟器（SimAI-CM）来分别模拟计算和通信任务。
 
 SimAI-CP transforms submodules into detailed kernels, providing precise computation simulations using a self-built, fine-grained operation library (§3.3). 
+
 SimAI-CP将子模块转换为详细的内核，使用自建的细粒度操作库提供精确的计算模拟（§3.3）。
 
 SimAI-CM integrates parts of NCCL, breaking down each collective communication into peer-to-peer operations to deliver accurate communication simulation results (§3.4).
+
 SimAI-CM集成了NCCL的部分内容，将每个集体通信分解为点对点操作，以提供准确的通信模拟结果（§3.4）。
 
 Additionally, we implement multi-threaded acceleration and lock-free global context sharing to boost simulation speed further (§3.5).
+
 此外，我们实施多线程加速和无锁全局上下文共享以进一步提高模拟速度（§3.5）。
 
 ![image](https://github.com/user-attachments/assets/215a66ba-ca90-4e7f-9aa9-75a112fd0540)
