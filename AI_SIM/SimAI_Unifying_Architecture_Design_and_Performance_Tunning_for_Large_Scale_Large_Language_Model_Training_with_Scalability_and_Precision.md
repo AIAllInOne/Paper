@@ -247,7 +247,7 @@ To address these challenges, simulations are crucial for three primary goals:
 
 为了应对这些挑战，模拟对于三个主要目标至关重要：
 
-Comprehensive evaluation of AI infrastructure. To ensure the effective deployment of new hardware and configurations, AI infrastructure must be evaluated from multiple perspectives:
+**Comprehensive evaluation of AI infrastructure**. To ensure the effective deployment of new hardware and configurations, AI infrastructure must be evaluated from multiple perspectives:
 
 全面评估人工智能基础设施。为了确保新硬件和配置的有效部署，人工智能基础设施必须从多个角度进行评估：
 
@@ -255,18 +255,13 @@ Comprehensive evaluation of AI infrastructure. To ensure the effective deploymen
 - GPU选择：在采用新的GPU型号之前，云服务提供商（CSPs）需要评估它们在大规模AI工作负载下的性能。
 - Network Architecture Design: Once specific GPUs and intra-host interconnects are chosen, the next challenge is optimizing network architecture for scalability.
 - 网络架构设计：一旦选择了特定的GPU和主机内互连，下一个挑战就是优化网络架构以实现可扩展性。
+- Host Architecture Design: Evaluating different host configurations for each type of GPU is essential to determine the optimal number of GPUs per host and the best intra-host interconnect.
+- 主机架构设计：评估每种GPU类型的不同主机配置对于确定每台主机的最佳GPU数量和最佳的主机内互连至关重要。
 
-Host Architecture Design: Evaluating different host configurations for each type of GPU is essential to determine the optimal number of GPUs per host and the best intra-host interconnect.
+**Cost-effective validation of optimizations.** In addition to hardware evaluations, simulations are indispensable for validating new optimization techniques during model development and system upgrades. This involves:
 
-主机架构设计：评估每种GPU类型的不同主机配置对于确定每台主机的最佳GPU数量和最佳的主机内互连至关重要。
 
-Cost-effective validation of optimizations.
-
-优化的成本效益验证。
-
-In addition to hardware evaluations, simulations are indispensable for validating new optimization techniques during model development and system upgrades. This involves:
-
-除了硬件评估外，模拟在模型开发和系统升级期间验证新的优化技术是不可或缺的。其中包括：
+**优化的成本效益验证。**除了硬件评估外，模拟在模型开发和系统升级期间验证新的优化技术是不可或缺的。其中包括：
 
 Parameter Tuning: Testing a variety of model parameters and training framework settings is critical to achieving optimal performance.
 
@@ -276,13 +271,10 @@ Evaluating New Mechanisms: As innovative enhancements—such as new training fra
 
 评估新机制：随着创新增强——例如新的训练框架、集体通信方法和网络拥塞控制算法的引入，模拟提供了一个在真实环境中评估它们有效性的低成本方法。
 
-Development of a unified simulation framework.
+**Development of a unified simulation framework.** Given the diverse needs for simulations across different components and layers of the AI infrastructure, a unified simulation framework is essential.
 
-统一模拟框架的开发。
 
-Given the diverse needs for simulations across different components and layers of the AI infrastructure, a unified simulation framework is essential.
-
-考虑到跨越人工智能基础设施不同组件和层面的多样化的模拟需求，统一的模拟框架是至关重要的。
+**统一模拟框架的开发。** 考虑到跨越人工智能基础设施不同组件和层面的多样化的模拟需求，统一的模拟框架是至关重要的。
 
 Our goal is to develop a unified simulator that addresses all these requirements in a single platform.
 
@@ -294,28 +286,28 @@ This unified approach will enable consistent, high-precision simulations across 
 
 ## 2.3 Our Goals
 
-Generating workloads that reflect real-world training. To achieve accurate simulation results, realistic input sources—capturing the detailed behaviors of training frameworks—are essential. Simply estimating workload based on the required floating-point operations is too coarse-grained. Some approaches, like Chakra [53], improve this by using trace-driven methods to extract function-level data from PyTorch Execution Trace. However, this only works for LLMs with the same parameters and scale, limiting the ability to simulate new models or configurations.
+**Generating workloads that reflect real-world training.** To achieve accurate simulation results, realistic input sources—capturing the detailed behaviors of training frameworks—are essential. Simply estimating workload based on the required floating-point operations is too coarse-grained. Some approaches, like Chakra [53], improve this by using trace-driven methods to extract function-level data from PyTorch Execution Trace. However, this only works for LLMs with the same parameters and scale, limiting the ability to simulate new models or configurations.
 
-为了获得准确的模拟结果，需要生成反映真实训练情况的工作负载。捕捉训练框架的详细行为的真实输入源至关重要。简单地根据所需的浮点运算量来估算工作负载过于粗糙。一些方法，如Chakra [53]，通过使用基于跟踪的方法从PyTorch执行跟踪中提取函数级别的数据来改进这一点。但是，这仅适用于具有相同参数和规模的LLM，限制了对新模型或配置的模拟能力。
+**为了获得准确的模拟结果，需要生成反映真实训练情况的工作负载。** 捕捉训练框架的详细行为的真实输入源至关重要。简单地根据所需的浮点运算量来估算工作负载过于粗糙。一些方法，如Chakra [53]，通过使用基于跟踪的方法从PyTorch执行跟踪中提取函数级别的数据来改进这一点。但是，这仅适用于具有相同参数和规模的LLM，限制了对新模型或配置的模拟能力。
 
 Goal 1: We need a flexible and precise workload generator that can handle various models, parameters, and scales.
 目标1：我们需要一个灵活且精确的工作负载生成器，可以处理各种模型、参数和规模。
 
-High-fidelity communication simulation. Classical network simulators, such as NS-3 [47] and OMNET++ [55], offer packet-level network behavior simulations but don’t address the collective communication used in distributed LLM training. To maximize performance, collective communication libraries (e.g., NCCL) apply various optimizations that affect traffic patterns. Simulating these from scratch can lead to low fidelity.
+**High-fidelity communication simulation.** Classical network simulators, such as NS-3 [47] and OMNET++ [55], offer packet-level network behavior simulations but don’t address the collective communication used in distributed LLM training. To maximize performance, collective communication libraries (e.g., NCCL) apply various optimizations that affect traffic patterns. Simulating these from scratch can lead to low fidelity.
 
-高保真度的通信模拟。经典的网络模拟器，如NS-3 [47]和OMNET++ [55]，提供了基于数据包的网络行为模拟，但并未涉及分布式LLM训练中使用的集体通信。为了最大化性能，集体通信库（例如NCCL）应用各种影响流量模式的优化。从零开始模拟这些可能导致保真度较低。
+*8高保真度的通信模拟。**经典的网络模拟器，如NS-3 [47]和OMNET++ [55]，提供了基于数据包的网络行为模拟，但并未涉及分布式LLM训练中使用的集体通信。为了最大化性能，集体通信库（例如NCCL）应用各种影响流量模式的优化。从零开始模拟这些可能导致保真度较低。
 
 Goal 2: We need a high-precision collective communication simulator that incorporates key optimizations and enhancements.
 目标2：我们需要一个高精度的集体通信模拟器，融入关键优化和增强。
 
-High-fidelity computation simulation. Current solutions like GPGPU-Sim [2] simulate GPU kernel computations at a detailed level but are too time-consuming for large-scale LLM simulations. Other approaches, such as ASTRA-sim [45], fail to support different GPUs or lack the necessary precision.
+**High-fidelity computation simulation.** Current solutions like GPGPU-Sim [2] simulate GPU kernel computations at a detailed level but are too time-consuming for large-scale LLM simulations. Other approaches, such as ASTRA-sim [45], fail to support different GPUs or lack the necessary precision.
 
-高保真度的计算模拟。当前的解决方案，如GPGPU-Sim [2]，在细节级别模拟GPU内核计算，但对于大规模LLM模拟来说耗时过长。其他方法，如ASTRA-sim [45]，不支持不同的GPU或缺乏必要的精度。
+**高保真度的计算模拟。**当前的解决方案，如GPGPU-Sim [2]，在细节级别模拟GPU内核计算，但对于大规模LLM模拟来说耗时过长。其他方法，如ASTRA-sim [45]，不支持不同的GPU或缺乏必要的精度。
 
 Goal 3: We need an efficient computation simulator that delivers both precision and scalability for large-scale simulations.
 目标3：我们需要一个既精确又可扩展的高效计算模拟器，用于大规模模拟。
 
-Fast simulation speed. Using a combination of current methods (i.e., PyTorch trace generator with ASTRA-sim), simulating a single iteration of GPT-3 training with 128 GPUs can take an entire day, while the same task on real hardware takes just two seconds. Efficiency is critical to scale simulations for practical use.
+**Fast simulation speed.** Using a combination of current methods (i.e., PyTorch trace generator with ASTRA-sim), simulating a single iteration of GPT-3 training with 128 GPUs can take an entire day, while the same task on real hardware takes just two seconds. Efficiency is critical to scale simulations for practical use.
 
 快速模拟速度。使用目前的方法的组合（例如，PyTorch跟踪生成器与ASTRA-sim），使用128个GPU模拟GPT-3训练的单次迭代可能需要整整一天，而在真实硬件上完成同样的任务只需两秒钟。效率对于扩展模拟以实际应用至关重要。
 
