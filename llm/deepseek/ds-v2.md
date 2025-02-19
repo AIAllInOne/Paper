@@ -51,19 +51,26 @@ For DeepSeek-V2, we design an innovative attention mechanism called Multi-head L
 
 对于DeepSeek-V2，我们设计了一种创新的注意力机制，称为多头潜在注意力机制（MLA）。MLA配备了低秩键值联合压缩，性能优于MHA，但需要的KV缓存量明显较少。我们在下面介绍它的架构，并在附录 D.2 中提供 MLA 和 MHA 的比较。
 
-  
+  ![image](https://github.com/user-attachments/assets/34f86e60-bf0b-4ba9-b053-08565f79f86d)
+
 
 ### 2.1.1 Preliminaries: Standard Multi-Head Attention
 
+![image](https://github.com/user-attachments/assets/3618e0c7-c211-4b04-af34-1d3b9780f9dd)
 
 We first introduce the standard MHA mechanism as background. Let 𝑑 be the embedding dimension, 𝑛ℎ be the number of attention heads, 𝑑ℎ be the dimension per head, and h𝑡 ∈ R𝑑 be the attention input of the 𝑡-th token at an attention layer. Standard MHA first produces q𝑡 , k𝑡 , v𝑡 ∈ R𝑑ℎ𝑛ℎ through three matrices 𝑊𝑄 ,𝑊𝐾 ,𝑊𝑉 ∈ R𝑑ℎ𝑛ℎ×𝑑 , respectively:
 
 我们首先介绍标准的 MHA 机制作为背景。令 𝑑 为 embedding 维度，𝑛ℎ 为注意力头的数量，𝑑ℎ 为每个注意力头的维度，h𝑡 ∈ R𝑑 为注意力层上第 𝑡 个 token 的注意力输入。标准 MHA 首先通过三个矩阵 𝑊𝑄 ,𝑊𝐾 ,𝑊𝑉 ∈ R𝑑ℎ𝑛ℎ×𝑑 分别生成 q𝑡 , k𝑡 , v𝑡 ∈ R𝑑ℎ𝑛ℎ：
 
+![image](https://github.com/user-attachments/assets/5bef2adf-d6ad-4e68-90ce-9ba4e24ad9d8)
 
 
 Then, q𝑡 , k𝑡 , v𝑡 will be sliced into 𝑛ℎ heads for the multi-head attention computation
 然后，q𝑡、k𝑡、v𝑡 将被切分为 𝑛ℎ 个头，以进行多头注意力计算
+
+ ![image](https://github.com/user-attachments/assets/cc47099e-d3ee-447f-9f55-081b57349750)
+
+ ![image](https://github.com/user-attachments/assets/cb1a5601-4e50-4337-955c-ba378b96848b)
 
 
 
@@ -75,13 +82,17 @@ where q𝑡,𝑖 , k𝑡,𝑖 , v𝑡,𝑖 ∈ R𝑑ℎ denote the query, key, a
 The core of MLA is the low-rank joint compression for keys and values to reduce KV cache:
 MLA的核心是对key和value进行低秩联合压缩，以减少KV缓存：
 
-
-
+![image](https://github.com/user-attachments/assets/cce59a0c-0528-4310-963d-c3498aa7fa43)
 
 where c 𝐾𝑉 𝑡 ∈ R𝑑𝑐 is the compressed latent vector for keys and values; 𝑑𝑐(≪ 𝑑ℎ𝑛ℎ) denotes the KV compression dimension; 𝑊𝐷𝐾𝑉 ∈ R𝑑𝑐×𝑑 is the down-projection matrix; and 𝑊𝑈𝐾 ,𝑊𝑈𝑉 ∈ R𝑑ℎ𝑛ℎ×𝑑𝑐 are the up-projection matrices for keys and values, respectively. During inference, MLA only needs to cache c 𝐾𝑉 𝑡 , so its KV cache has only 𝑑𝑐 𝑙 elements, where 𝑙 denotes the number of layers. In addition, during inference, since 𝑊𝑈𝐾 can be absorbed into 𝑊𝑄 , and 𝑊𝑈𝑉 can be absorbed into 𝑊𝑂 , we even do not need to compute keys and values out for attention. Figure 3 intuitively illustrates how the KV joint compression in MLA reduces the KV cache.
 其中 c 𝐾𝑉 𝑡 ∈ R𝑑𝑐 是键和值的压缩潜在向量；𝑑𝑐(≪ 𝑑ℎ𝑛ℎ) 表示 KV 压缩维度；𝑊𝐷𝐾𝑉 ∈ R𝑑𝑐×𝑑 是下投影矩阵；𝑊𝑈𝐾 ,𝑊𝑈𝑉 ∈ R𝑑ℎ𝑛ℎ×𝑑𝑐 分别是键和值的上投影矩阵。在推理过程中，MLA 只需要缓存 c 个 𝐾𝑉 𝑡 ，因此其 KV 缓存只有 𝑑𝑐 𝑙 个元素，其中 𝑙 表示层数。此外，在推理过程中，由于 𝑊𝑈𝐾 可以被吸收到 𝑊𝑄 中， 𝑊𝑈𝑉 可以被吸收到 𝑊𝑂 中，我们甚至不需要计算出用于注意的键和值。图 3 直观地说明了 MLA 中的 KV 联合压缩如何减少 KV 缓存。
 Moreover, in order to reduce the activation memory during training, we also perform low-rank compression for the queries, even if it cannot reduce the KV cache:
+
 此外，为了减少训练期间的激活内存，我们还对查询执行低秩压缩，即使它不能减少 KV 缓存：
+
+![image](https://github.com/user-attachments/assets/4a922368-0518-4ac4-85b9-8c8fcd5cb4bc)
+
+![image](https://github.com/user-attachments/assets/b1336455-d1dd-4263-886f-cb59204b04b0)
 
 
 where c 𝑄 𝑡 ∈ R𝑑 ′ 𝑐 is the compressed latent vector for queries; 𝑑 ′ 𝑐 (≪ 𝑑ℎ𝑛ℎ) denotes the query compression dimension; and 𝑊𝐷𝑄 ∈ R𝑑 ′ 𝑐×𝑑 ,𝑊𝑈𝑄 ∈ R𝑑ℎ𝑛ℎ×𝑑 ′ 𝑐 are the down-projection and upprojection matrices for queries, respectively.
@@ -90,18 +101,23 @@ where c 𝑄 𝑡 ∈ R𝑑 ′ 𝑐 is the compressed latent vector for queries
 
 ### 2.1.3 Decoupled Rotary Position Embedding
 
+![image](https://github.com/user-attachments/assets/23b6ca96-a20e-479a-9c77-6f8bdf7463be)
+
 
 Following DeepSeek 67B (DeepSeek-AI, 2024), we intend to use the Rotary Position Embedding (RoPE) (Su et al., 2024) for DeepSeek-V2. However, RoPE is incompatible with low-rank KV compression. To be specific, RoPE is position-sensitive for both keys and queries. If we apply RoPE for the keys k 𝐶 𝑡 , 𝑊𝑈𝐾 in Equation 10 will be coupled with a position-sensitive RoPE matrix. In this way, 𝑊𝑈𝐾 cannot be absorbed into 𝑊𝑄 any more during inference, since a RoPE matrix related to the currently generating token will lie between 𝑊𝑄 and 𝑊𝑈𝐾 and matrix multiplication does not obey a commutative law. As a result, we must recompute the keys for all the prefix tokens during inference, which will significantly hinder the inference efficiency.
 
 继 DeepSeek 67B（DeepSeek-AI，2024 年）之后，我们打算在 DeepSeek-V2 中使用旋转位置嵌入 (RoPE)（Su 等人，2024 年）。但是，RoPE 与低秩 KV 压缩不兼容。具体来说，RoPE 对键和查询都是位置敏感的。如果我们将 RoPE 用于键 k 𝐶 𝑡 ，则等式 10 中的 𝑊𝑈𝐾 将与位置敏感的 RoPE 矩阵耦合。这样，𝑊𝑈𝐾 在推理过程中就无法再被吸收到 𝑊𝑄 中，因为与当前生成的 token 相关的 RoPE 矩阵将位于 𝑊𝑄 和 𝑊𝑈𝐾 之间，并且矩阵乘法不遵循交换律。因此，我们必须在推理过程中重新计算所有前缀标记的键，这将严重阻碍推理效率。
+
+![image](https://github.com/user-attachments/assets/80eb2e7b-b161-4976-aea5-1f4dcaa0458b)
 
 
 As a solution, we propose the decoupled RoPE strategy that uses additional multi-head queries q 𝑅 𝑡,𝑖 ∈ R𝑑 𝑅 ℎ and a shared key k 𝑅 𝑡 ∈ R𝑑 𝑅 ℎ to carry RoPE, where 𝑑 𝑅 ℎ denotes the per-head dimension of the decoupled queries and key. Equipped with the decoupled RoPE strategy, MLA performs the following computation:
 
 作为解决方案，我们提出了解耦 RoPE 策略，该策略使用额外的多头查询 q 𝑅 𝑡,𝑖 ∈ R𝑑 𝑅 ℎ 和共享密钥 k 𝑅 𝑡 ∈ R𝑑 𝑅 ℎ 来承载 RoPE，其中 𝑑 𝑅 ℎ 表示解耦查询和密钥的每个头维度。配备解耦 RoPE 策略后，MLA 可执行以下计算：
 
+![image](https://github.com/user-attachments/assets/4d62333c-00b9-4871-b0c2-b47025da5e23)
 
-
+![image](https://github.com/user-attachments/assets/5757286b-bc83-4040-893b-73236694bc3e)
 
 where 𝑊𝑄𝑅 ∈ R𝑑 𝑅 ℎ 𝑛ℎ×𝑑 ′ 𝑐 and 𝑊𝐾𝑅 ∈ R𝑑 𝑅 ℎ ×𝑑 are matrices to produce the decouples queries and key, respectively; RoPE(·) denotes the operation that applies RoPE matrices; and [·; ·] denotes the concatenation operation. During inference, the decoupled key should also be cached. Therefore, DeepSeek-V2 requires a total KV cache containing (𝑑𝑐 + 𝑑 𝑅 ℎ )𝑙 elements. 
 
@@ -117,5 +133,7 @@ We demonstrate a comparison of the KV cache per token among different attention 
 
 我们在表 1 中展示了不同注意力机制中每个 token 的 KV 缓存的比较。MLA 只需要少量的 KV 缓存，相当于只有 2.25 个组的 GQA，但可以获得比 MHA 更强的性能。
 
+![image](https://github.com/user-attachments/assets/8f0f1b30-8ca2-48ab-821b-02fb406b2484)
 
-Table1 不同注意力机制每个 token 的 KV 缓存对比。𝑛ℎ 表示注意力头数量，𝑑ℎ 表示每个注意力头的维度，𝑙 表示层数，𝑛𝑔 表示 GQA 中的组数，𝑑𝑐 和 𝑑 𝑅 ℎ 分别表示 MLA 中解耦查询和键的 KV 压缩维度和每个头的维度。KV 缓存量以元素数量衡量，与存储精度无关。对于 DeepSeek-V2，𝑑𝑐 设置为 4𝑑ℎ，𝑑 𝑅 ℎ 设置为 𝑑ℎ 2 。因此，它的 KV 缓存与只有 2.25 个组的 GQA 相同，但其性能强于 MHA
+
+> Table1 不同注意力机制每个 token 的 KV 缓存对比。𝑛ℎ 表示注意力头数量，𝑑ℎ 表示每个注意力头的维度，𝑙 表示层数，𝑛𝑔 表示 GQA 中的组数，𝑑𝑐 和 𝑑 𝑅 ℎ 分别表示 MLA 中解耦查询和键的 KV 压缩维度和每个头的维度。KV 缓存量以元素数量衡量，与存储精度无关。对于 DeepSeek-V2，𝑑𝑐 设置为 4𝑑ℎ，𝑑 𝑅 ℎ 设置为 𝑑ℎ 2 。因此，它的 KV 缓存与只有 2.25 个组的 GQA 相同，但其性能强于 MHA
